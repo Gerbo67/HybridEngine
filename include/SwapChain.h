@@ -27,6 +27,9 @@ public:
     void 
     destroy();
 
+    /**
+     * @brief Presenta el contenido del búfer de reserva en la pantalla.
+     */
     void
     present();
 
@@ -53,3 +56,4 @@ private:
     IDXGIAdapter* m_dxgiAdapter = nullptr;
     IDXGIFactory* m_dxgiFactory = nullptr;
 };
+
