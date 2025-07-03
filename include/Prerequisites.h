@@ -13,6 +13,7 @@
 #include <d3dcompiler.h>
 #include "Resource.h"
 
+
 // MACROS
 #define SAFE_RELEASE(x) if(x != nullptr) x->Release(); x = nullptr;
 
