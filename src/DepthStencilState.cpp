@@ -45,17 +45,17 @@ DepthStencilState::update() {
 
 void
 DepthStencilState::render(DeviceContext& deviceContext, unsigned int stencilRef, bool reset) {
-    if (!deviceContext.m_deviceContext) {
-        ERROR("DepthStencilState", "render", "DeviceContext is nullptr");
-        return;
-    }
-
-    if (!m_depthStencilState) {
+    if (!m_depthStencilState && !reset) {
         ERROR("DepthStencilState", "render", "DepthStencilState is nullptr");
         return;
     }
 
-    deviceContext.m_deviceContext->OMSetDepthStencilState(m_depthStencilState, stencilRef);
+    if (reset) {
+        deviceContext.OMSetDepthStencilState(nullptr, stencilRef);
+    }
+    else {
+        deviceContext.OMSetDepthStencilState(m_depthStencilState, stencilRef);
+    }
 }
 
 void

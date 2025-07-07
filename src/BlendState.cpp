@@ -40,10 +40,6 @@ BlendState::render(DeviceContext& deviceContext,
                    float* blendFactor,
                    unsigned int sampleMask,
                    bool reset) {
-    if (!deviceContext.m_deviceContext) {
-        ERROR("RenderTargetView", "render", "DeviceContext is nullptr.");
-        return;
-    }
     if (!m_blendState) {
         ERROR("BlendState", "render", "BlendState is not initialized.");
         return;
@@ -55,9 +51,9 @@ BlendState::render(DeviceContext& deviceContext,
     }
 
     if (!reset) {
-        deviceContext.m_deviceContext->OMSetBlendState(m_blendState, blendFactor, sampleMask);
+        deviceContext.OMSetBlendState(m_blendState, blendFactor, sampleMask);
     } else {
-        deviceContext.m_deviceContext->OMSetBlendState(nullptr, blendFactor, sampleMask);
+        deviceContext.OMSetBlendState(nullptr, blendFactor, sampleMask);
     }
 }
 

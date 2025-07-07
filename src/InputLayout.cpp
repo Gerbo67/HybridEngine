@@ -42,7 +42,7 @@ InputLayout::render(DeviceContext& deviceContext) {
         return;
     }
 
-    deviceContext.m_deviceContext->IASetInputLayout(m_inputLayout);
+    deviceContext.IASetInputLayout(m_inputLayout);
 }
 
 void
