@@ -208,4 +208,5 @@ private:
     ID3D11DeviceContext* m_deviceContext = nullptr;
 
     friend class SwapChain;
+    friend class BaseApp;
 };

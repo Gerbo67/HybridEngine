@@ -166,6 +166,9 @@ BaseApp::init(HINSTANCE hInstance, int nCmdShow) {
     if (FAILED(hr))
         return hr;
     g_vMeshColor = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
+    g_LightPos = XMFLOAT4(2.0f, 4.0f, -2.0f, 1.0f);
+
+    g_userInterface.init(g_window.m_hWnd, g_device.m_device, g_deviceContext.m_deviceContext);
 
     return S_OK;
 }
@@ -175,6 +178,13 @@ BaseApp::init(HINSTANCE hInstance, int nCmdShow) {
 // =============================
 void
 BaseApp::update() {
+    g_userInterface.update();
+
+    ImGui::Begin("Light Controls");
+    ImGui::Text("Light Position");
+    g_userInterface.vec3Control("Position", &g_LightPos.x);
+    ImGui::End();
+
     static float t = 0.0f;
     static DWORD dwTimeStart = 0;
     DWORD dwTimeCur = GetTickCount();
@@ -198,7 +208,6 @@ BaseApp::update() {
     cbPlane.vMeshColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
     m_constPlane.update(g_deviceContext, nullptr, 0, nullptr, &cbPlane, 0, 0);
 
-    XMFLOAT4 g_LightPos(2.0f, 4.0f, -2.0f, 1.0f);
     float dot = g_LightPos.y;
     XMMATRIX shadowMatrix = XMMATRIX(dot, -g_LightPos.x, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
                                      0.0f, -g_LightPos.z, dot, 0.0f, 0.0f, -1.0f, 0.0f, dot);
@@ -249,6 +258,8 @@ BaseApp::render() {
     g_shadowBlendState.render(g_deviceContext, blendFactor, 0xffffffff, true);
     g_deviceContext.OMSetDepthStencilState(nullptr, 0);
 
+    g_userInterface.render();
+
     g_swapChain.present();
 }
 
@@ -257,6 +268,8 @@ BaseApp::render() {
 // =============================
 void
 BaseApp::destroy() {
+    g_userInterface.destroy();
+
     g_deviceContext.ClearState();
 
     g_shadowBlendState.destroy();
@@ -290,6 +303,10 @@ BaseApp::destroy() {
 // Procedimiento de ventana
 // =============================
 LRESULT CALLBACK BaseApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam)) {
+        return true;
+    }
+
     PAINTSTRUCT ps;
     HDC hdc;
 

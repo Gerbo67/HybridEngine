@@ -18,6 +18,15 @@
     <Filter Include="source">
       <UniqueIdentifier>{9ed35299-ad08-4415-b63e-d634559ae380}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IMGUI">
+      <UniqueIdentifier>{97e11ee4-d658-423d-9a90-21382dcf6c36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IMGUI\include">
+      <UniqueIdentifier>{9be47748-1c34-4dcf-936f-375005d59d90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IMGUI\source">
+      <UniqueIdentifier>{7f03b0d2-a674-4448-ba0c-b0b97f2f1a17}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Prerequisites.h">
@@ -62,6 +71,33 @@
     <ClInclude Include="include\MeshComponent.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="include\BlendState.h" />
+    <ClInclude Include="include\DepthStencilState.h" />
+    <ClInclude Include="include\UserInterface.h" />
+    <ClInclude Include="..\..\C++\imgui-docking\imconfig.h">
+      <Filter>IMGUI\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\C++\imgui-docking\imgui.h">
+      <Filter>IMGUI\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\C++\imgui-docking\imgui_internal.h">
+      <Filter>IMGUI\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\C++\imgui-docking\imstb_rectpack.h">
+      <Filter>IMGUI\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\C++\imgui-docking\imstb_textedit.h">
+      <Filter>IMGUI\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\C++\imgui-docking\imstb_truetype.h">
+      <Filter>IMGUI\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\C++\imgui-docking\backends\imgui_impl_dx11.h">
+      <Filter>IMGUI\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\C++\imgui-docking\backends\imgui_impl_win32.h">
+      <Filter>IMGUI\source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HybridEngine.cpp" />
@@ -100,6 +136,30 @@
     </ClCompile>
     <ClCompile Include="src\Buffer.cpp">
       <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BlendState.cpp" />
+    <ClCompile Include="src\DepthStencilState.cpp" />
+    <ClCompile Include="src\UserInterface.cpp" />
+    <ClCompile Include="..\..\C++\imgui-docking\imgui.cpp">
+      <Filter>IMGUI\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\C++\imgui-docking\imgui_demo.cpp">
+      <Filter>IMGUI\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\C++\imgui-docking\imgui_draw.cpp">
+      <Filter>IMGUI\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\C++\imgui-docking\imgui_tables.cpp">
+      <Filter>IMGUI\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\C++\imgui-docking\imgui_widgets.cpp">
+      <Filter>IMGUI\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\C++\imgui-docking\backends\imgui_impl_dx11.cpp">
+      <Filter>IMGUI\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\C++\imgui-docking\backends\imgui_impl_win32.cpp">
+      <Filter>IMGUI\source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

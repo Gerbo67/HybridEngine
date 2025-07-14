@@ -15,6 +15,9 @@
 #include "MeshComponent.h"
 #include "BlendState.h"
 #include "DepthStencilState.h"
+#include "UserInterface.h"
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 class BaseApp {
 public:
@@ -82,6 +85,7 @@ private:
     ShaderProgram g_shaderShadow;
     BlendState g_shadowBlendState;
     DepthStencilState g_shadowDepthStencilState;
+    UserInterface g_userInterface;
 
     // Buffers de cámara
     Buffer m_neverChanges;
@@ -111,6 +115,7 @@ private:
     XMMATRIX g_View;
     XMMATRIX g_Projection;
     XMFLOAT4 g_vMeshColor;
+    XMFLOAT4 g_LightPos;
 
     // Geometría
     MeshComponent cubeMesh;
