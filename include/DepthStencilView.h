@@ -5,6 +5,12 @@ class Device;
 class DeviceContext;
 class Texture;
 
+/**
+ * @class DepthStencilView
+ * @brief Representa una vista de galería de símbolos de profundidad.
+ *
+ * Esta clase encapsula una vista de un recurso de textura que se puede usar como búfer de profundidad/galería de símbolos.
+ */
 class 
 DepthStencilView {
 public:

@@ -4,6 +4,13 @@
 
 class DeviceContext;
 
+/**
+ * @class MeshComponent
+ * @brief Representa un componente de malla para un objeto en la escena.
+ *
+ * Esta clase (aunque actualmente no hereda de Component) contiene los búferes de vértices e índices
+ * que definen la geometría de un objeto renderizable.
+ */
 class
   MeshComponent /*: public Component*/ {
 public:

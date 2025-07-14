@@ -6,6 +6,13 @@ class DeviceContext;
 class Window;
 class Texture;
 
+/**
+ * @class SwapChain
+ * @brief Gestiona la cadena de intercambio para la presentación de fotogramas.
+ *
+ * Esta clase es responsable de crear y gestionar la cadena de intercambio,
+ * que es una colección de búferes utilizados para mostrar gráficos en la pantalla.
+ */
 class 
 SwapChain {
 public:
@@ -56,4 +63,3 @@ private:
     IDXGIAdapter* m_dxgiAdapter = nullptr;
     IDXGIFactory* m_dxgiFactory = nullptr;
 };
-

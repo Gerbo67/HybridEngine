@@ -1,4 +1,11 @@
-﻿#pragma once
+﻿/**
+ * @file Prerequisites.h
+ * @brief Archivo de cabecera que incluye librerías comunes, macros y definiciones utilizadas en todo el proyecto.
+ *
+ * Este archivo centraliza las inclusiones de la STL, Windows, DirectX y otras librerías,
+ * además de definir macros útiles para la gestión de recursos y el registro de errores.
+ */
+#pragma once
 // Librerias STD
 #include <string>
 #include <sstream>

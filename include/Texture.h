@@ -4,6 +4,13 @@
 class Device;
 class DeviceContext;
 
+/**
+ * @class Texture
+ * @brief Representa una textura en la GPU.
+ *
+ * Esta clase maneja la creación y gestión de recursos de textura,
+ * que pueden ser cargados desde un archivo o creados como un objetivo de renderizado.
+ */
 class
     Texture {
 public:

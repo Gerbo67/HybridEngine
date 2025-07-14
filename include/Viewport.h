@@ -3,6 +3,12 @@
 class Window;
 class DeviceContext;
 
+/**
+ * @class Viewport
+ * @brief Define un área de renderizado en la pantalla.
+ *
+ * El viewport especifica las dimensiones y la posición del área en la que se dibujará la escena.
+ */
 class 
 Viewport {
 public:

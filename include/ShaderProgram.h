@@ -5,6 +5,13 @@
 class Device;
 class DeviceContext;
 
+/**
+ * @class ShaderProgram
+ * @brief Gestiona los shaders de vértices y píxeles.
+ *
+ * Esta clase es responsable de cargar, compilar e inicializar los programas de sombreado
+ * (vertex y pixel shaders) que se utilizarán en el pipeline de renderizado.
+ */
 class 
 ShaderProgram {
 public:

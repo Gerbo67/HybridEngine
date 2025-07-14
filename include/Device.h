@@ -1,6 +1,13 @@
 ﻿#pragma once
 #include "Prerequisites.h"
 
+/**
+ * @class Device
+ * @brief Representa el dispositivo de renderizado de Direct3D.
+ *
+ * Esta clase encapsula el dispositivo Direct3D, que es responsable de crear recursos
+ * como texturas, búferes y sombreadores.
+ */
 class 
 Device {
 public:

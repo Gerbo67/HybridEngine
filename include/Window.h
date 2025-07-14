@@ -1,6 +1,13 @@
 ﻿#pragma once
 #include "Prerequisites.h"
 
+/**
+ * @class Window
+ * @brief Gestiona la ventana de la aplicación.
+ *
+ * Esta clase es responsable de crear, actualizar, renderizar y destruir la ventana.
+ * Contiene el handle de la ventana y sus dimensiones.
+ */
 class 
 Window {
 public:

@@ -5,6 +5,12 @@
 #include "imgui_impl_dx11.h"
 #include "imgui_internal.h"
 
+/**
+ * @class UserInterface
+ * @brief Gestiona la interfaz de usuario utilizando ImGui.
+ *
+ * Esta clase encapsula la inicialización, actualización y renderizado de la interfaz de usuario.
+ */
 class
     UserInterface {
 public:

@@ -1,6 +1,13 @@
 ﻿#pragma once
 #include "Prerequisites.h"
 
+/**
+ * @class DeviceContext
+ * @brief Representa el contexto del dispositivo de renderizado.
+ *
+ * Esta clase encapsula el contexto inmediato del dispositivo Direct3D,
+ * que es responsable de generar comandos de renderizado.
+ */
 class
     DeviceContext {
 public:
