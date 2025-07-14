@@ -15,6 +15,7 @@
 #include "MeshComponent.h"
 #include "BlendState.h"
 #include "DepthStencilState.h"
+#include "ModelLoader.h"
 #include "UserInterface.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -86,6 +87,7 @@ private:
     BlendState g_shadowBlendState;
     DepthStencilState g_shadowDepthStencilState;
     UserInterface g_userInterface;
+    ModelLoader g_modelLoader;
 
     // Buffers de cámara
     Buffer m_neverChanges;

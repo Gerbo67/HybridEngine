@@ -12,9 +12,9 @@ class DeviceContext;
  * que definen la geometría de un objeto renderizable.
  */
 class
-  MeshComponent /*: public Component*/ {
+  MeshComponent  {
 public:
-    MeshComponent() : m_numVertex(0), m_numIndex(0)/*, Component(ComponentType::MESH)*/ {}
+    MeshComponent() : m_numVertex(0), m_numIndex(0) {}
 
     virtual
     ~MeshComponent() = default;
@@ -25,14 +25,14 @@ public:
      * @param deviceContext Contexto del dispositivo para operaciones gr�ficas.
      */
     void
-    update(float deltaTime) /*override*/ {}
+    update(float deltaTime)  {}
 
     /**
      * @brief Renderiza el actor.
      * @param deviceContext Contexto del dispositivo para operaciones gr�ficas.
      */
     void
-    render(DeviceContext& deviceContext) /*override*/ {}
+    render(DeviceContext& deviceContext) {}
 public:
     std::string m_name;
     std::vector<SimpleVertex> m_vertex;

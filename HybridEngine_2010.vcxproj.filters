@@ -71,9 +71,6 @@
     <ClInclude Include="include\MeshComponent.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\BlendState.h" />
-    <ClInclude Include="include\DepthStencilState.h" />
-    <ClInclude Include="include\UserInterface.h" />
     <ClInclude Include="..\..\C++\imgui-docking\imconfig.h">
       <Filter>IMGUI\include</Filter>
     </ClInclude>
@@ -97,6 +94,24 @@
     </ClInclude>
     <ClInclude Include="..\..\C++\imgui-docking\backends\imgui_impl_win32.h">
       <Filter>IMGUI\source</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Resource.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ModelLoader.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BlendState.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DepthStencilState.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\UserInterface.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OBJ_Loader.h">
+      <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -137,9 +152,6 @@
     <ClCompile Include="src\Buffer.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="src\BlendState.cpp" />
-    <ClCompile Include="src\DepthStencilState.cpp" />
-    <ClCompile Include="src\UserInterface.cpp" />
     <ClCompile Include="..\..\C++\imgui-docking\imgui.cpp">
       <Filter>IMGUI\source</Filter>
     </ClCompile>
@@ -160,6 +172,18 @@
     </ClCompile>
     <ClCompile Include="..\..\C++\imgui-docking\backends\imgui_impl_win32.cpp">
       <Filter>IMGUI\source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BlendState.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DepthStencilState.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelLoader.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UserInterface.cpp">
+      <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
