@@ -112,25 +112,7 @@ BaseApp::init(HINSTANCE hInstance, int nCmdShow) {
     g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, g_window.m_width / (FLOAT)g_window.m_height, 0.01f, 100.0f);
     cbNeverChanges.mView = XMMatrixTranspose(g_View);
     cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-    SimpleVertex planeVertices[] = {
-        {XMFLOAT3(-20.0f, 0.0f, -20.0f), XMFLOAT2(0.0f, 0.0f)}, {XMFLOAT3(20.0f, 0.0f, -20.0f), XMFLOAT2(1.0f, 0.0f)},
-        {XMFLOAT3(20.0f, 0.0f, 20.0f), XMFLOAT2(1.0f, 1.0f)}, {XMFLOAT3(-20.0f, 0.0f, 20.0f), XMFLOAT2(0.0f, 1.0f)},
-    };
-    WORD planeIndices[] = {0, 2, 1, 0, 3, 2};
-    for (int i = 0; i < 4; i++)
-        planeMesh.m_vertex.push_back(planeVertices[i]);
-    for (int i = 0; i < 6; i++)
-        planeMesh.m_index.push_back(planeIndices[i]);
-
-    hr = m_planeVertexBuffer.init(g_device, planeMesh, D3D11_BIND_VERTEX_BUFFER);
-    if (FAILED(hr))
-        return hr;
-    hr = m_planeIndexBuffer.init(g_device, planeMesh, D3D11_BIND_INDEX_BUFFER);
-    if (FAILED(hr))
-        return hr;
-    hr = m_constPlane.init(g_device, sizeof(CBChangesEveryFrame));
-    if (FAILED(hr))
-        return hr;
+    
     hr = g_shaderShadow.CreateShader(g_device, PIXEL_SHADER, "HybridEngine.fx");
     if (FAILED(hr))
         return hr;
@@ -152,6 +134,9 @@ BaseApp::init(HINSTANCE hInstance, int nCmdShow) {
     g_vMeshColor = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
     g_LightPos = XMFLOAT4(2.0f, 4.0f, -2.0f, 1.0f);
 
+    g_ModelScale = 0.005f;
+    g_ModelRotation = { 0.0f, 0.0f, 0.0f };
+
     g_userInterface.init(g_window.m_hWnd, g_device.m_device, g_deviceContext.m_deviceContext);
 
     return S_OK;
@@ -164,34 +149,30 @@ void
 BaseApp::update() {
     g_userInterface.update();
 
-    ImGui::Begin("Light Controls");
-    ImGui::Text("Light Position");
-    g_userInterface.vec3Control("Position", &g_LightPos.x);
+    ImGui::Begin("Model Viewer Controls");
+    g_userInterface.floatControl("Scale", &g_ModelScale, 0.5f);
+    g_userInterface.vec3Control("Rotation", &g_ModelRotation.x, 0.0f);
+    ImGui::Separator();
+    g_userInterface.vec3Control("Light Position", &g_LightPos.x, 2.0f);
     ImGui::End();
-
-    static float t = 0.0f;
-    static DWORD dwTimeStart = 0;
-    DWORD dwTimeCur = GetTickCount();
-    if (dwTimeStart == 0)
-        dwTimeStart = dwTimeCur;
-    t = (dwTimeCur - dwTimeStart) / 1000.0f;
+    
 
     m_neverChanges.update(g_deviceContext, nullptr, 0, nullptr, &cbNeverChanges, 0, 0);
     m_changeOnResize.update(g_deviceContext, nullptr, 0, nullptr, &cbChangesOnResize, 0, 0);
 
-    g_World = XMMatrixTranslation(0.0f, 1.0f, 0.0f) * XMMatrixRotationY(t) * XMMatrixScaling(0.001f, 0.001f, 0.001f);
-    g_vMeshColor.x = (sinf(t * 1.0f) + 1.0f) * 0.5f;
-    g_vMeshColor.y = (cosf(t * 3.0f) + 1.0f) * 0.5f;
-    g_vMeshColor.z = (sinf(t * 5.0f) + 1.0f) * 0.5f;
+    XMMATRIX matScale = XMMatrixScaling(g_ModelScale, g_ModelScale, g_ModelScale);
+    XMMATRIX matRotation = XMMatrixRotationRollPitchYaw(
+        XMConvertToRadians(g_ModelRotation.x), 
+        XMConvertToRadians(g_ModelRotation.y), 
+        XMConvertToRadians(g_ModelRotation.z)
+    );
+    XMMATRIX matTranslation = XMMatrixTranslation(0.0f, 0.0f, 0.0f); // El modelo ya está centrado
+    g_World = matScale * matRotation * matTranslation;
+
     cb.mWorld = XMMatrixTranspose(g_World);
     cb.vMeshColor = g_vMeshColor;
     m_changeEveryFrame.update(g_deviceContext, nullptr, 0, nullptr, &cb, 0, 0);
-
-    g_PlaneWorld = XMMatrixTranslation(0.0f, -5.0f, 0.0f);
-    cbPlane.mWorld = XMMatrixTranspose(g_PlaneWorld);
-    cbPlane.vMeshColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-    m_constPlane.update(g_deviceContext, nullptr, 0, nullptr, &cbPlane, 0, 0);
-
+    
     float dot = g_LightPos.y;
     XMMATRIX shadowMatrix = XMMATRIX(dot, -g_LightPos.x, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
                                      0.0f, -g_LightPos.z, dot, 0.0f, 0.0f, -1.0f, 0.0f, dot);
@@ -215,14 +196,6 @@ BaseApp::render() {
     g_shaderProgram.render(g_deviceContext);
     m_neverChanges.render(g_deviceContext, 0, 1);
     m_changeOnResize.render(g_deviceContext, 1, 1);
-
-    m_planeVertexBuffer.render(g_deviceContext, 0, 1);
-    m_planeIndexBuffer.render(g_deviceContext, 0, 1, false, DXGI_FORMAT_R32_UINT);
-    m_constPlane.render(g_deviceContext, 2, 1);
-    m_constPlane.render(g_deviceContext, 2, 1, true);
-    g_deviceContext.PSSetShaderResources(0, 1, &g_pTextureRV);
-    g_deviceContext.PSSetSamplers(0, 1, &g_pSamplerLinear);
-    g_deviceContext.DrawIndexed(planeMesh.m_index.size(), 0, 0);
 
     m_vertexBuffer.render(g_deviceContext, 0, 1);
     m_indexBuffer.render(g_deviceContext, 0, 1, false, DXGI_FORMAT_R32_UINT);
@@ -260,8 +233,6 @@ BaseApp::destroy() {
     if (g_pShadowDepthStencilState)
         g_pShadowDepthStencilState->Release();
     g_shaderShadow.destroy();
-    m_planeVertexBuffer.destroy();
-    m_planeIndexBuffer.destroy();
     if (g_pSamplerLinear)
         g_pSamplerLinear->Release();
     if (g_pTextureRV)
@@ -269,7 +240,6 @@ BaseApp::destroy() {
     m_neverChanges.destroy();
     m_changeOnResize.destroy();
     m_changeEveryFrame.destroy();
-    m_constPlane.destroy();
     m_constShadow.destroy();
     m_vertexBuffer.destroy();
     m_indexBuffer.destroy();

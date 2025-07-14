@@ -2,7 +2,6 @@
 #include "OBJ_Loader.h"
 #include "Prerequisites.h"
 
-// Pre-declaración para evitar dependencias circulares y mantener el código limpio.
 class MeshComponent;
 
 class ModelLoader {

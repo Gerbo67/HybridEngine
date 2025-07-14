@@ -119,14 +119,17 @@ private:
     XMFLOAT4 g_vMeshColor;
     XMFLOAT4 g_LightPos;
 
+    XMFLOAT3 g_ModelRotation;
+    float g_ModelScale;
+
     // Geometría
     MeshComponent cubeMesh;
-    MeshComponent planeMesh;
+    //MeshComponent planeMesh;
 
     // Estructuras de Constant Buffers
     CBNeverChanges cbNeverChanges;
     CBChangeOnResize cbChangesOnResize;
-    CBChangesEveryFrame cbPlane;
+    //CBChangesEveryFrame cbPlane;
     CBChangesEveryFrame cb;
     CBChangesEveryFrame cbShadow;
 };

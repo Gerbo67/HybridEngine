@@ -82,3 +82,19 @@ void UserInterface::vec3Control(std::string label, float* values, float resetVal
     ImGui::Columns(1);
     ImGui::PopID();
 }
+
+void UserInterface::floatControl(const std::string& label, float* value, float resetValue, float columnWidth) {
+    ImGui::PushID(label.c_str());
+
+    ImGui::Columns(2);
+    ImGui::SetColumnWidth(0, columnWidth);
+    ImGui::Text(label.c_str());
+    ImGui::NextColumn();
+
+    ImGui::PushItemWidth(-1.0f);
+    ImGui::DragFloat("##value", value, 0.001f, 0.0f, 0.0f, "%.3f");
+    ImGui::PopItemWidth();
+
+    ImGui::Columns(1);
+    ImGui::PopID();
+}
