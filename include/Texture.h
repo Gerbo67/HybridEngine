@@ -4,35 +4,35 @@
 class Device;
 class DeviceContext;
 
-class 
-Texture {
+class
+    Texture {
 public:
-    Texture()  = default;
+    Texture() = default;
     ~Texture() = default;
 
     HRESULT
-  init(Device device,
-       const std::string & textureName,
-       ExtensionType extensionType);
+    init(Device device,
+         const std::string& textureName,
+         ExtensionType extensionType);
 
     HRESULT
-  init(Device device,
-       unsigned int width, 
-       unsigned int height, 
-       DXGI_FORMAT Format, 
-       unsigned int BindFlags,
-       unsigned int sampleCount = 1,
-       unsigned int qualityLevels = 0);
+    init(Device device,
+         unsigned int width,
+         unsigned int height,
+         DXGI_FORMAT Format,
+         unsigned int BindFlags,
+         unsigned int sampleCount = 1,
+         unsigned int qualityLevels = 0);
 
-    HRESULT 
-  init(Device& device, Texture& textureRef, DXGI_FORMAT format);
-	
-    void 
+    HRESULT
+    init(Device& device, Texture& textureRef, DXGI_FORMAT format);
+
+    void
     update();
-	
-    void 
-  render(DeviceContext & deviceContext, unsigned int StartSlot, unsigned int NumViews);
-	
+
+    void
+    render(DeviceContext& deviceContext, unsigned int StartSlot, unsigned int NumViews);
+
     void
     destroy();
 

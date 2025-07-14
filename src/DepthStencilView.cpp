@@ -21,7 +21,7 @@ DepthStencilView::init(Device& device, Texture& depthStencil, DXGI_FORMAT format
     descDSV.Texture2D.MipSlice = 0;
 
     // Create depth stencil view
-    HRESULT hr = device.m_device->CreateDepthStencilView(depthStencil.m_texture,
+    HRESULT hr = device.CreateDepthStencilView(depthStencil.m_texture,
                                                          &descDSV,
                                                          &m_depthStencilView);
 
