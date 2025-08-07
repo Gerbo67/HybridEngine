@@ -68,7 +68,7 @@ HRESULT BaseApp::init() {
         planeMesh.m_numVertex = 4;
         planeMesh.m_numIndex = 6;
 
-        hr = m_PlaneTexture.init(m_device, "Textures/Default", DDS);
+        hr = m_PlaneTexture.init(m_device, L"Textures/Grass.dds", DDS);
         if (FAILED(hr)) {
             ERROR("Main", "InitDevice", ("Failed to initialize Plane Texture. HRESULT: " + std::to_string(hr)).c_str());
             return hr;
@@ -113,10 +113,11 @@ HRESULT BaseApp::init() {
     // ===================================================================================
     // CÓDIGO ACTUALIZADO: Conexión del callback con normalización de escala.
     // ===================================================================================
-    m_userInterface.onImportModel = [this](const std::string& modelPath, const std::string& texturePath) {
+    m_userInterface.onImportModel = [this](const std::wstring& modelPath, const std::wstring& texturePath) {
         ModelLoader fbxLoader;
         // 1. Cargar el modelo FBX (sin cambios)
-        if (!fbxLoader.LoadFBXModel(modelPath)) {
+        std::string modelPathStr(modelPath.begin(), modelPath.end());
+        if (!fbxLoader.LoadFBXModel(modelPathStr)) {
             ERROR("BaseApp", "onImportModel", "Failed to load FBX model.");
             return;
         }
@@ -177,8 +178,14 @@ HRESULT BaseApp::init() {
         std::vector<Texture> textures;
         if (!texturePath.empty()) {
             Texture newTexture;
-            if (SUCCEEDED(newTexture.init(m_device, texturePath.c_str(), DDS))) {
+            // CAMBIO 4: Llama a init con el wstring directamente.
+            // Añade un log de error para estar 100% seguros.
+            if (SUCCEEDED(newTexture.init(m_device, texturePath, DDS))) {
                 textures.push_back(newTexture);
+            } else {
+                // Este error ya no debería aparecer, pero es una buena práctica mantenerlo.
+                std::string texturePathStr(texturePath.begin(), texturePath.end());
+                ERROR("BaseApp", "onImportModel", ("FALLO AL INICIALIZAR LA TEXTURA DDS: " + texturePathStr).c_str());
             }
         }
 

@@ -11,9 +11,7 @@ public:
     ~Texture() = default;
 
     HRESULT
-  init(Device device,
-       const std::string & textureName,
-       ExtensionType extensionType);
+    init(Device device, const std::wstring& textureName, ExtensionType extensionType);
 
     HRESULT
   init(Device device,
@@ -42,5 +40,5 @@ public:
     // This variable is in charge of handle a texture resource as image data
     ID3D11ShaderResourceView* m_textureFromImg;
 
-    std::string m_textureName;
+    std::wstring m_textureName;
 };

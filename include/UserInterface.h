@@ -72,8 +72,8 @@ public:
     void
     rotationControls(EU::TSharedPointer<Actor> actor);
 
-    std::string
-    openFileDialog(const char* filter);
+    std::wstring
+    openFileDialog(const wchar_t* filter);
 
     void
     showImportDialog();
@@ -119,13 +119,13 @@ private:
     bool show_exit_popup = false; // Variable de estado para el popup
     // Nuevas variables para la interfaz
     bool show_import_dialog = false;
-    std::string selectedFilePath = "";
+    std::wstring selectedFilePath = L"";
     bool showObjectControls = true;
     HWND m_windowHandle = nullptr;
 
 public:
     int selectedActorIndex = -1;
     // El callback ahora necesita dos rutas: una para el modelo y otra para la textura
-    std::function<void(const std::string&, const std::string&)> onImportModel;
+    std::function<void(const std::wstring&, const std::wstring&)> onImportModel;
     std::function<void()> onExitApplication;
 };

@@ -1,4 +1,7 @@
 ﻿#include "UserInterface.h"
+
+#include <algorithm>
+
 #include "ECS/Actor.h"
 #include "ECS/Transform.h"
 #include "EngineUtilities/Vectors/Vector3.h"
@@ -289,10 +292,10 @@ void UserInterface::rotationControls(EU::TSharedPointer<Actor> actor) {
     ToolTip("Rotar 90 grados en el eje seleccionado");
 }
 
-std::string UserInterface::openFileDialog(const char* filter) {
-    OPENFILENAMEA ofn;
-    char szFile[260] = { 0 };
-    
+std::wstring UserInterface::openFileDialog(const wchar_t* filter) {
+    OPENFILENAMEW ofn; // Usamos la versión 'W' (Wide/Unicode)
+    wchar_t szFile[260] = { 0 };
+
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = m_windowHandle;
@@ -300,29 +303,29 @@ std::string UserInterface::openFileDialog(const char* filter) {
     ofn.nMaxFile = sizeof(szFile);
     ofn.lpstrFilter = filter;
     ofn.nFilterIndex = 1;
-    ofn.lpstrFileTitle = NULL;
-    ofn.nMaxFileTitle = 0;
-    ofn.lpstrInitialDir = NULL;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-    
-    if (GetOpenFileNameA(&ofn)) {
-        return std::string(szFile);
+
+    if (GetOpenFileNameW(&ofn)) {
+        return std::wstring(szFile);
     }
-    
-    return "";
+
+    return L"";
 }
 
+
 void UserInterface::showImportDialog() {
-    // 1. Pedir el archivo del MODELO. Cambiamos el filtro a ".fbx".
-    std::string modelPath = openFileDialog("FBX Models (*.fbx)\0*.fbx\0All Files\0*.*\0");
+    // CAMBIO 2: Usar wstring y literales wide (L"...")
+    std::wstring modelPath = openFileDialog(L"FBX Models (*.fbx)\0*.fbx\0All Files\0*.*\0");
     
-    // Si el usuario no canceló la selección del modelo...
     if (!modelPath.empty()) {
-        // 2. Pedir el archivo de la TEXTURA (esto permanece igual)
-        std::string texturePath = openFileDialog("Texture Files (*.dds)\0*.dds\0All Files\0*.*\0");
+        std::replace(modelPath.begin(), modelPath.end(), L'\\', L'/');
+
+        std::wstring texturePath = openFileDialog(L"DDS Textures (*.dds)\0*.dds\0All Files\0*.*\0");
+
+        if (!texturePath.empty()) {
+            std::replace(texturePath.begin(), texturePath.end(), L'\\', L'/');
+        }
         
-        // 3. Llamar al callback con ambas rutas
-        // (El resto de la función no necesita cambios)
         if (onImportModel) {
             onImportModel(modelPath, texturePath);
         }
@@ -331,10 +334,13 @@ void UserInterface::showImportDialog() {
         ImGui::OpenPopup("Import Success");
     }
     
-    // Popup de confirmación de importación (sin cambios)
     if (ImGui::BeginPopupModal("Import Success", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Model imported successfully!");
-        ImGui::Text("File: %s", selectedFilePath.c_str());
+        
+        // CAMBIO 3: Convertir wstring a string solo para mostrar en ImGui
+        std::string displayPath(selectedFilePath.begin(), selectedFilePath.end());
+        ImGui::Text("File: %s", displayPath.c_str());
+
         ImGui::Separator();
         
         if (ImGui::Button("OK", ImVec2(120, 0))) {
