@@ -1,11 +1,4 @@
-﻿/**
- * @file Prerequisites.h
- * @brief Archivo de cabecera que incluye librerías comunes, macros y definiciones utilizadas en todo el proyecto.
- *
- * Este archivo centraliza las inclusiones de la STL, Windows, DirectX y otras librerías,
- * además de definir macros útiles para la gestión de recursos y el registro de errores.
- */
-#pragma once
+﻿#pragma once
 // Librerias STD
 #include <string>
 #include <sstream>
@@ -19,62 +12,76 @@
 #include <d3dx11.h>
 #include <d3dcompiler.h>
 #include "Resource.h"
+#include "resource.h"
 
+// Third Party Libraries
+#include "EngineUtilities\Memory\TSharedPointer.h"
+#include "EngineUtilities\Memory\TWeakPointer.h"
+#include "EngineUtilities\Memory\TStaticPtr.h"
+#include "EngineUtilities\Memory\TUniquePtr.h"
 
 // MACROS
 #define SAFE_RELEASE(x) if(x != nullptr) x->Release(); x = nullptr;
 
 #define MESSAGE( classObj, method, state )   \
 {                                            \
-std::wostringstream os_;                  \
-os_ << classObj << "::" << method << " : " << "[CREATION OF RESOURCE " << ": " << state << "] \n"; \
-OutputDebugStringW( os_.str().c_str() );  \
+   std::wostringstream os_;                  \
+   os_ << classObj << "::" << method << " : " << "[CREATION OF RESOURCE " << ": " << state << "] \n"; \
+   OutputDebugStringW( os_.str().c_str() );  \
 }
 
 #define ERROR(classObj, method, errorMSG)                     \
 {                                                             \
-try {                                                     \
-std::wostringstream os_;                              \
-os_ << L"ERROR : " << classObj << L"::" << method     \
-<< L" : " << errorMSG << L"\n";                   \
-OutputDebugStringW(os_.str().c_str());                \
-} catch (...) {                                           \
-OutputDebugStringW(L"Failed to log error message.\n");\
-}                                                         \
+    try {                                                     \
+        std::wostringstream os_;                              \
+        os_ << L"ERROR : " << classObj << L"::" << method     \
+            << L" : " << errorMSG << L"\n";                   \
+        OutputDebugStringW(os_.str().c_str());                \
+    } catch (...) {                                           \
+        OutputDebugStringW(L"Failed to log error message.\n");\
+    }                                                         \
 }
 
 // Structures
 struct
-    SimpleVertex {
-    XMFLOAT3 Pos;
-    XMFLOAT2 Tex;
+  SimpleVertex {
+  XMFLOAT3 Pos;
+  XMFLOAT2 Tex;
 };
 
 struct
-    CBNeverChanges {
-    XMMATRIX mView;
+  CBNeverChanges {
+  XMMATRIX mView;
 };
 
 struct
-    CBChangeOnResize {
-    XMMATRIX mProjection;
+  CBChangeOnResize {
+  XMMATRIX mProjection;
 };
 
 struct
-    CBChangesEveryFrame {
-    XMMATRIX mWorld;
-    XMFLOAT4 vMeshColor;
+  CBChangesEveryFrame {
+  XMMATRIX mWorld;
+  XMFLOAT4 vMeshColor;
 };
 
-enum
-    ExtensionType {
-    DDS = 0,
-    PNG = 1,
-    JPG = 2
+enum 
+ExtensionType {
+  DDS = 0,
+  PNG = 1,
+  JPG = 2
 };
 
-enum
-    ShaderType {
-    VERTEX_SHADER = 0,
-    PIXEL_SHADER = 1
+enum 
+ShaderType {
+  VERTEX_SHADER = 0,
+  PIXEL_SHADER = 1
+};
+
+enum 
+ComponentType {
+  NONE = 0,     ///< Tipo de componente no especificado.
+  TRANSFORM = 1,///< Componente de transformación.
+  MESH = 2,     ///< Componente de malla.
+  MATERIAL = 3  ///< Componente de material.
 };

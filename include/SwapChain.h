@@ -6,13 +6,6 @@ class DeviceContext;
 class Window;
 class Texture;
 
-/**
- * @class SwapChain
- * @brief Gestiona la cadena de intercambio para la presentación de fotogramas.
- *
- * Esta clase es responsable de crear y gestionar la cadena de intercambio,
- * que es una colección de búferes utilizados para mostrar gráficos en la pantalla.
- */
 class 
 SwapChain {
 public:
@@ -34,9 +27,6 @@ public:
     void 
     destroy();
 
-    /**
-     * @brief Presenta el contenido del búfer de reserva en la pantalla.
-     */
     void
     present();
 
@@ -47,11 +37,11 @@ private:
     D3D_FEATURE_LEVEL m_featureLevel = D3D_FEATURE_LEVEL_11_0;
     // MSAA Configuration
     /*
-     * Para evitar que los p�xeles se vean con un efecto de "serrucho" (aliasing) en DirectX 11 con C++,
-     * se puede utilizar una t�cnica llamada anti-aliasing.
+     * Para evitar que los píxeles se vean con un efecto de "serrucho" (aliasing) en DirectX 11 con C++,
+     * se puede utilizar una técnica llamada anti-aliasing.
      *
      * Multisample Anti-Aliasing (MSAA)
-     * MSAA es una t�cnica que suaviza los bordes de los objetos al muestrear varios puntos por p�xel.
+     * MSAA es una técnica que suaviza los bordes de los objetos al muestrear varios puntos por píxel.
      * Para habilitar MSAA en DirectX 11:
      *
      */

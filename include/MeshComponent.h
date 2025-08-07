@@ -1,38 +1,37 @@
 ﻿#pragma once
 #include "Prerequisites.h"
-//#include "ECS\Component.h"
+#include "ECS\Component.h"
 
 class DeviceContext;
 
-/**
- * @class MeshComponent
- * @brief Representa un componente de malla para un objeto en la escena.
- *
- * Esta clase (aunque actualmente no hereda de Component) contiene los búferes de vértices e índices
- * que definen la geometría de un objeto renderizable.
- */
 class
-  MeshComponent  {
+MeshComponent : public Component {
 public:
-    MeshComponent() : m_numVertex(0), m_numIndex(0) {}
+    MeshComponent() : m_numVertex(0), m_numIndex(0), Component(ComponentType::MESH) {}
 
     virtual
     ~MeshComponent() = default;
 
+    void
+    init() override {};
+  
     /**
      * @brief Actualiza el actor.
-     * @param deltaTime El tiempo transcurrido desde la �ltima actualizaci�n.
-     * @param deviceContext Contexto del dispositivo para operaciones gr�ficas.
+     * @param deltaTime El tiempo transcurrido desde la última actualización.
+     * @param deviceContext Contexto del dispositivo para operaciones gráficas.
      */
     void
-    update(float deltaTime)  {}
+    update(float deltaTime) override {}
 
     /**
      * @brief Renderiza el actor.
-     * @param deviceContext Contexto del dispositivo para operaciones gr�ficas.
+     * @param deviceContext Contexto del dispositivo para operaciones gráficas.
      */
     void
-    render(DeviceContext& deviceContext) {}
+    render(DeviceContext& deviceContext) override {}
+
+    void 
+    destroy() override {}
 public:
     std::string m_name;
     std::vector<SimpleVertex> m_vertex;

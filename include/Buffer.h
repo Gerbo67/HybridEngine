@@ -5,13 +5,6 @@ class Device;
 class DeviceContext;
 class MeshComponent;
 
-/**
- * @class Buffer
- * @brief Representa un búfer de datos en la GPU.
- *
- * Esta clase se utiliza para crear y gestionar búferes de vértices, índices y constantes
- * que son utilizados por el pipeline de renderizado.
- */
 class 
 Buffer {
 public:

@@ -4,12 +4,6 @@
 class Device;
 class DeviceContext;
 
-/**
- * @class InputLayout
- * @brief Define el formato de los datos de vértice de entrada.
- *
- * Esta clase describe cómo los datos de vértice del búfer de entrada se asignan a los registros de entrada del sombreador de vértices.
- */
 class 
 InputLayout {
 public:

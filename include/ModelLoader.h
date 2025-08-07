@@ -1,31 +1,42 @@
 ﻿#pragma once
-#include "OBJ_Loader.h"
 #include "Prerequisites.h"
+#include "MeshComponent.h"
+#include "fbxsdk.h"
 
-class MeshComponent;
-
-class ModelLoader {
+class 
+ModelLoader {
 public:
     ModelLoader() = default;
     ~ModelLoader() = default;
 
-    void
-    init();
-
-    void
-    update();
-
-    void
-    render();
-
-    void
-    destroy();
-
-    /**
-     * @brief Carga un modelo desde un archivo .obj y devuelve sus datos.
-     * @param filename La ruta completa al archivo del modelo .obj.
-     * @return Un objeto MeshComponent que contiene la geometría del modelo.
-     */
+    /* OBJ MODEL LOADER*/
     MeshComponent
-    Load(const std::string& filename);
+    LoadOBJModel(const std::string & filePath);
+
+    /* FBX MODEL LOADER*/
+    bool
+    InitializeFBXManager();
+
+    bool 
+    LoadFBXModel(const std::string & filePath);
+
+    void 
+  ProcessFBXNode(FbxNode* node);
+
+    void 
+    ProcessFBXMesh(FbxNode* node);
+
+    void 
+    ProcessFBXMaterials(FbxSurfaceMaterial* material);
+
+    std::vector<std::string> 
+  GetTextureFileNames() const { return textureFileNames; }
+
+private:
+    FbxManager* lSdkManager;
+    FbxScene* lScene;
+    std::vector<std::string> textureFileNames;
+public:
+    std::string modelName;
+    std::vector<MeshComponent> meshes;
 };

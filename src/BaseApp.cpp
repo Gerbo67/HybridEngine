@@ -1,12 +1,297 @@
 ﻿#include "BaseApp.h"
+#include "ECS/Transform.h" // Necesario para manipular el componente Transform
 
-// =============================
-// Ciclo principal de la aplicación
-// =============================
+HRESULT BaseApp::init() {
+    HRESULT hr = S_OK;
+
+    hr = m_swapChain.init(m_device, m_deviceContext, m_backBuffer, m_window);
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice", ("Failed to initialize SwpaChian. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
+
+    hr = m_renderTargetView.init(m_device, m_backBuffer, DXGI_FORMAT_R8G8B8A8_UNORM);
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice", ("Failed to initialize RenderTargetView. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
+
+    hr = m_depthStencil.init(m_device, m_window.m_width, m_window.m_height, DXGI_FORMAT_D24_UNORM_S8_UINT,
+                             D3D11_BIND_DEPTH_STENCIL, 4, 0);
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice", ("Failed to initialize DepthStencil. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
+
+    hr = m_depthStencilView.init(m_device, m_depthStencil, DXGI_FORMAT_D24_UNORM_S8_UINT);
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice", ("Failed to initialize DepthStencilView. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
+
+    hr = m_viewport.init(m_window);
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice", ("Failed to initialize Viewport. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
+
+    std::vector<D3D11_INPUT_ELEMENT_DESC> Layout;
+    Layout.push_back({"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+                      D3D11_INPUT_PER_VERTEX_DATA, 0});
+    Layout.push_back({"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+                      D3D11_INPUT_PER_VERTEX_DATA, 0});
+
+    hr = m_shaderProgram.init(m_device, "HybridEngine.fx", Layout);
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice", ("Failed to initialize ShaderProgram. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
+
+    // ===================================================================================
+    // BLOQUE DE CÓDIGO DE LA PISTOLA ELIMINADO
+    // La carga de modelos ahora se gestiona dinámicamente a través de la interfaz.
+    // ===================================================================================
+
+    // Set Plane Actor (Esta parte se mantiene)
+    m_APlane = EU::MakeShared<Actor>(m_device);
+    if (!m_APlane.isNull()) {
+        SimpleVertex planeVertices[] = {
+            {XMFLOAT3(-20.0f, 0.0f, -20.0f), XMFLOAT2(0.0f, 0.0f)},
+            {XMFLOAT3(20.0f, 0.0f, -20.0f), XMFLOAT2(1.0f, 0.0f)},
+            {XMFLOAT3(20.0f, 0.0f, 20.0f), XMFLOAT2(1.0f, 1.0f)},
+            {XMFLOAT3(-20.0f, 0.0f, 20.0f), XMFLOAT2(0.0f, 1.0f)},
+        };
+        WORD planeIndices[] = {0, 2, 1, 0, 3, 2};
+
+        planeMesh.m_vertex.assign(planeVertices, planeVertices + 4);
+        planeMesh.m_index.assign(planeIndices, planeIndices + 6);
+        planeMesh.m_numVertex = 4;
+        planeMesh.m_numIndex = 6;
+
+        hr = m_PlaneTexture.init(m_device, "Textures/Default", DDS);
+        if (FAILED(hr)) {
+            ERROR("Main", "InitDevice", ("Failed to initialize Plane Texture. HRESULT: " + std::to_string(hr)).c_str());
+            return hr;
+        }
+
+        std::vector<MeshComponent> PlaneMeshes;
+        PlaneMeshes.push_back(planeMesh);
+        std::vector<Texture> PlaneTextures;
+        PlaneTextures.push_back(m_PlaneTexture);
+
+        m_APlane->setMesh(m_device, PlaneMeshes);
+        m_APlane->setTextures(PlaneTextures);
+        m_APlane->getComponent<Transform>()->setTransform(EU::Vector3(0.0f, -5.0f, 0.0f), EU::Vector3(0.0f, 0.0f, 0.0f),
+                                                          EU::Vector3(1.0f, 1.0f, 1.0f));
+        m_APlane->setCastShadow(false);
+        m_actors.push_back(m_APlane);
+    } else {
+        ERROR("Main", "InitDevice", "Failed to create Plane Actor.");
+        return E_FAIL;
+    }
+
+    hr = m_neverChanges.init(m_device, sizeof(CBNeverChanges));
+    if (FAILED(hr))
+        return hr;
+    hr = m_changeOnResize.init(m_device, sizeof(CBChangeOnResize));
+    if (FAILED(hr))
+        return hr;
+
+    XMVECTOR Eye = XMVectorSet(0.0f, 3.0f, -6.0f, 0.0f);
+    XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+    XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+    m_View = XMMatrixLookAtLH(Eye, At, Up);
+    m_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, m_window.m_width / (FLOAT)m_window.m_height, 0.01f, 100.0f);
+
+    cbNeverChanges.mView = XMMatrixTranspose(m_View);
+    cbChangesOnResize.mProjection = XMMatrixTranspose(m_Projection);
+
+    m_LightPos = XMFLOAT4(2.0f, 4.0f, -2.0f, 1.0f);
+
+    m_userInterface.init(m_window.m_hWnd, m_device.m_device, m_deviceContext.m_deviceContext);
+
+    // ===================================================================================
+    // CÓDIGO ACTUALIZADO: Conexión del callback con normalización de escala.
+    // ===================================================================================
+    m_userInterface.onImportModel = [this](const std::string& modelPath, const std::string& texturePath) {
+        ModelLoader fbxLoader;
+        // 1. Cargar el modelo FBX (sin cambios)
+        if (!fbxLoader.LoadFBXModel(modelPath)) {
+            ERROR("BaseApp", "onImportModel", "Failed to load FBX model.");
+            return;
+        }
+        if (fbxLoader.meshes.empty() || fbxLoader.meshes[0].m_vertex.empty()) {
+            ERROR("BaseApp", "onImportModel", "Model is empty or has no vertices.");
+            return;
+        }
+
+        // 2. Calcular la Bounding Box (AABB) del modelo completo
+        XMVECTOR minPoint = XMLoadFloat3(&fbxLoader.meshes[0].m_vertex[0].Pos);
+        XMVECTOR maxPoint = minPoint;
+
+        for (const auto& mesh : fbxLoader.meshes) {
+            for (const auto& vertex : mesh.m_vertex) {
+                XMVECTOR point = XMLoadFloat3(&vertex.Pos);
+                minPoint = XMVectorMin(minPoint, point);
+                maxPoint = XMVectorMax(maxPoint, point);
+            }
+        }
+
+        // 3. Calcular el centro, el tamaño y el factor de escala para la normalización
+        XMVECTOR center = (minPoint + maxPoint) / 2.0f;
+        XMVECTOR size = maxPoint - minPoint;
+        float largestDimension = max(XMVectorGetX(size), max(XMVectorGetY(size), XMVectorGetZ(size)));
+
+        const float TARGET_SIZE = 3.0f; // El tamaño deseado para la dimensión más grande del modelo
+        float scaleFactor = 1.0f;
+        if (largestDimension > 0.0001f) {
+            scaleFactor = TARGET_SIZE / largestDimension;
+        }
+
+        // 4. Crear nuevas mallas con los vértices centrados y re-escalados
+        std::vector<MeshComponent> normalizedMeshes;
+        for (const auto& originalMesh : fbxLoader.meshes) {
+            MeshComponent newMesh = originalMesh; // Copiar metadatos
+            newMesh.m_vertex.clear();
+
+            for (const auto& originalVertex : originalMesh.m_vertex) {
+                SimpleVertex newVertex = originalVertex;
+                XMVECTOR originalPos = XMLoadFloat3(&originalVertex.Pos);
+
+                // Aplicar la transformación: Centrar y luego escalar
+                XMVECTOR newPos = (originalPos - center) * scaleFactor;
+
+                XMStoreFloat3(&newVertex.Pos, newPos);
+                newMesh.m_vertex.push_back(newVertex);
+            }
+            normalizedMeshes.push_back(newMesh);
+        }
+
+        // 5. Crear y configurar el Actor con la malla normalizada
+        EU::TSharedPointer<Actor> newActor = EU::MakeShared<Actor>(m_device);
+        if (newActor.isNull()) {
+            ERROR("BaseApp", "onImportModel", "Failed to create new Actor.");
+            return;
+        }
+
+        std::vector<Texture> textures;
+        if (!texturePath.empty()) {
+            Texture newTexture;
+            if (SUCCEEDED(newTexture.init(m_device, texturePath.c_str(), DDS))) {
+                textures.push_back(newTexture);
+            }
+        }
+
+        newActor->setMesh(m_device, normalizedMeshes); // Usar las mallas normalizadas
+        newActor->setTextures(textures);
+
+        // La escala ahora es (1, 1, 1) porque el modelo base ya está en el tamaño correcto
+        newActor->getComponent<Transform>()->setTransform(
+            EU::Vector3(0.0f, 0.0f, 0.0f), // Posición
+            EU::Vector3(0.0f, 0.0f, 0.0f), // Rotación
+            EU::Vector3(1.0f, 1.0f, 1.0f)); // Escala
+
+        newActor->setCastShadow(true);
+        m_actors.push_back(newActor);
+    };
+
+    return S_OK;
+}
+
+void
+BaseApp::update() {
+    m_userInterface.update();
+
+    // Asegurarse de que el índice seleccionado sea válido para el vector de actores
+    if (m_userInterface.selectedActorIndex >= 0 && m_userInterface.selectedActorIndex < m_actors.size()) {
+        m_userInterface.objectControlPanel(m_actors[m_userInterface.selectedActorIndex]);
+    }
+    m_userInterface.mainMenuBar();
+    m_userInterface.outliner(m_actors);
+
+    static float t = 0.0f;
+    static DWORD dwTimeStart = 0;
+    DWORD dwTimeCur = GetTickCount();
+    if (dwTimeStart == 0)
+        dwTimeStart = dwTimeCur;
+    t = (dwTimeCur - dwTimeStart) / 1000.0f;
+
+    cbNeverChanges.mView = XMMatrixTranspose(m_View);
+    m_neverChanges.update(m_deviceContext, nullptr, 0, nullptr, &cbNeverChanges, 0, 0);
+    cbChangesOnResize.mProjection = XMMatrixTranspose(m_Projection);
+    m_changeOnResize.update(m_deviceContext, nullptr, 0, nullptr, &cbChangesOnResize, 0, 0);
+
+    for (auto& actor : m_actors) {
+        if (!actor.isNull()) {
+            actor->update(t, m_deviceContext);
+        }
+    }
+}
+
+void
+BaseApp::render() {
+    m_renderTargetView.render(m_deviceContext, m_depthStencilView, 1, ClearColor);
+    m_viewport.render(m_deviceContext);
+    m_depthStencilView.render(m_deviceContext);
+
+    m_shaderProgram.render(m_deviceContext);
+    m_neverChanges.render(m_deviceContext, 0, 1);
+    m_changeOnResize.render(m_deviceContext, 1, 1);
+
+    for (auto& actor : m_actors) {
+        if (!actor.isNull()) {
+            actor->render(m_deviceContext);
+        }
+    }
+
+    m_userInterface.render();
+    m_swapChain.present();
+}
+
+void
+BaseApp::destroy() {
+    // CORRECCIÓN: Se eliminó la llamada a m_userInterface.destroy()
+    // El destructor de UserInterface se encarga de la limpieza automáticamente.
+    if (m_deviceContext.m_deviceContext)
+        m_deviceContext.m_deviceContext->ClearState();
+
+    // Limpiar actores y sus recursos
+    for (auto& actor : m_actors) {
+        if (!actor.isNull()) {
+            actor->destroy();
+        }
+    }
+    m_actors.clear();
+
+    m_neverChanges.destroy();
+    m_changeOnResize.destroy();
+    m_shaderProgram.destroy();
+    m_depthStencil.destroy();
+    m_depthStencilView.destroy();
+    m_renderTargetView.destroy();
+    m_swapChain.destroy();
+
+    if (m_deviceContext.m_deviceContext)
+        m_deviceContext.m_deviceContext->Release();
+    if (m_device.m_device)
+        m_device.m_device->Release();
+}
+
 int
-BaseApp::run(HINSTANCE hInstance, int nCmdShow) {
-    if (FAILED(this->init(hInstance, nCmdShow))) {
-        this->destroy();
+BaseApp::run(HINSTANCE hInstance,
+             HINSTANCE hPrevInstance,
+             LPWSTR lpCmdLine,
+             int nCmdShow,
+             WNDPROC wndproc) {
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
+
+    if (FAILED(m_window.init(hInstance, nCmdShow, wndproc))) {
+        return 0;
+    }
+
+    if (FAILED(init())) {
+        destroy();
         return 0;
     }
 
@@ -16,267 +301,11 @@ BaseApp::run(HINSTANCE hInstance, int nCmdShow) {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         } else {
-            this->update();
-            this->render();
+            update();
+            render();
         }
     }
 
-    this->destroy();
+    destroy();
     return (int)msg.wParam;
-}
-
-// =============================
-// Inicialización de recursos
-// =============================
-HRESULT
-BaseApp::init(HINSTANCE hInstance, int nCmdShow) {
-    HRESULT hr = S_OK;
-
-    if (FAILED(g_window.init(hInstance, nCmdShow, BaseApp::WndProc)))
-        return E_FAIL;
-
-    hr = g_swapChain.init(g_device, g_deviceContext, g_backBuffer, g_window);
-    if (FAILED(hr))
-        return hr;
-
-    hr = g_renderTargetView.init(g_device, g_backBuffer, DXGI_FORMAT_R8G8B8A8_UNORM);
-    if (FAILED(hr))
-        return hr;
-
-    hr = g_depthStencil.init(g_device, g_window.m_width, g_window.m_height, DXGI_FORMAT_D24_UNORM_S8_UINT,
-                             D3D11_BIND_DEPTH_STENCIL, 4, 0);
-    if (FAILED(hr))
-        return hr;
-
-    hr = g_depthStencilView.init(g_device, g_depthStencil, DXGI_FORMAT_D24_UNORM_S8_UINT);
-    if (FAILED(hr))
-        return hr;
-
-    hr = g_viewport.init(g_window);
-    if (FAILED(hr))
-        return hr;
-
-    std::vector<D3D11_INPUT_ELEMENT_DESC> layout;
-    layout.push_back({"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
-                      D3D11_INPUT_PER_VERTEX_DATA, 0});
-    layout.push_back({"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
-                      D3D11_INPUT_PER_VERTEX_DATA, 0});
-    hr = g_shaderProgram.init(g_device, "HybridEngine.fx", layout);
-    if (FAILED(hr))
-        return hr;
-
-    cubeMesh = g_modelLoader.Load("Assets/Models/Glock.obj");
-
-    // Verificamos si el modelo se cargó correctamente.
-    if (cubeMesh.m_vertex.empty() || cubeMesh.m_index.empty()) {
-        return E_FAIL;
-    }
-
-    hr = m_vertexBuffer.init(g_device, cubeMesh, D3D11_BIND_VERTEX_BUFFER);
-    if (FAILED(hr))
-        return hr;
-    hr = m_indexBuffer.init(g_device, cubeMesh, D3D11_BIND_INDEX_BUFFER);
-    if (FAILED(hr))
-        return hr;
-
-    g_deviceContext.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    hr = m_neverChanges.init(g_device, sizeof(CBNeverChanges));
-    if (FAILED(hr))
-        return hr;
-    hr = m_changeOnResize.init(g_device, sizeof(CBChangeOnResize));
-    if (FAILED(hr))
-        return hr;
-    hr = m_changeEveryFrame.init(g_device, sizeof(CBChangesEveryFrame));
-    if (FAILED(hr))
-        return hr;
-    hr = D3DX11CreateShaderResourceViewFromFile(g_device.m_device, "seafloor.dds", NULL, NULL, &g_pTextureRV, NULL);
-    if (FAILED(hr))
-        return hr;
-    D3D11_SAMPLER_DESC sampDesc;
-    ZeroMemory(&sampDesc, sizeof(sampDesc));
-    sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-    sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-    sampDesc.MinLOD = 0;
-    sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-    hr = g_device.CreateSamplerState(&sampDesc, &g_pSamplerLinear);
-    if (FAILED(hr))
-        return hr;
-    XMVECTOR Eye = XMVectorSet(0.0f, 3.0f, -6.0f, 0.0f);
-    XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-    XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-    g_View = XMMatrixLookAtLH(Eye, At, Up);
-    g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, g_window.m_width / (FLOAT)g_window.m_height, 0.01f, 100.0f);
-    cbNeverChanges.mView = XMMatrixTranspose(g_View);
-    cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-    
-    hr = g_shaderShadow.CreateShader(g_device, PIXEL_SHADER, "HybridEngine.fx");
-    if (FAILED(hr))
-        return hr;
-    hr = m_constShadow.init(g_device, sizeof(CBChangesEveryFrame));
-    if (FAILED(hr))
-        return hr;
-    hr = g_shadowBlendState.init(g_device);
-    if (FAILED(hr))
-        return hr;
-    D3D11_DEPTH_STENCIL_DESC dsDesc;
-    ZeroMemory(&dsDesc, sizeof(dsDesc));
-    dsDesc.DepthEnable = TRUE;
-    dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-    dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
-    dsDesc.StencilEnable = FALSE;
-    hr = g_device.CreateDepthStencilState(&dsDesc, &g_pShadowDepthStencilState);
-    if (FAILED(hr))
-        return hr;
-    g_vMeshColor = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
-    g_LightPos = XMFLOAT4(2.0f, 4.0f, -2.0f, 1.0f);
-
-    g_ModelScale = 0.005f;
-    g_ModelRotation = { 0.0f, 0.0f, 0.0f };
-
-    g_userInterface.init(g_window.m_hWnd, g_device.m_device, g_deviceContext.m_deviceContext);
-
-    return S_OK;
-}
-
-// =============================
-// Actualización de la escena
-// =============================
-void
-BaseApp::update() {
-    g_userInterface.update();
-
-    ImGui::Begin("Model Viewer Controls");
-    g_userInterface.floatControl("Scale", &g_ModelScale, 0.5f);
-    g_userInterface.vec3Control("Rotation", &g_ModelRotation.x, 0.0f);
-    ImGui::Separator();
-    g_userInterface.vec3Control("Light Position", &g_LightPos.x, 2.0f);
-    ImGui::End();
-    
-
-    m_neverChanges.update(g_deviceContext, nullptr, 0, nullptr, &cbNeverChanges, 0, 0);
-    m_changeOnResize.update(g_deviceContext, nullptr, 0, nullptr, &cbChangesOnResize, 0, 0);
-
-    XMMATRIX matScale = XMMatrixScaling(g_ModelScale, g_ModelScale, g_ModelScale);
-    XMMATRIX matRotation = XMMatrixRotationRollPitchYaw(
-        XMConvertToRadians(g_ModelRotation.x), 
-        XMConvertToRadians(g_ModelRotation.y), 
-        XMConvertToRadians(g_ModelRotation.z)
-    );
-    XMMATRIX matTranslation = XMMatrixTranslation(0.0f, 0.0f, 0.0f); // El modelo ya está centrado
-    g_World = matScale * matRotation * matTranslation;
-
-    cb.mWorld = XMMatrixTranspose(g_World);
-    cb.vMeshColor = g_vMeshColor;
-    m_changeEveryFrame.update(g_deviceContext, nullptr, 0, nullptr, &cb, 0, 0);
-    
-    float dot = g_LightPos.y;
-    XMMATRIX shadowMatrix = XMMATRIX(dot, -g_LightPos.x, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-                                     0.0f, -g_LightPos.z, dot, 0.0f, 0.0f, -1.0f, 0.0f, dot);
-    XMMATRIX shadowWorld = g_World * shadowMatrix;
-    cbShadow.mWorld = XMMatrixTranspose(shadowWorld);
-    cbShadow.vMeshColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.5f);
-    m_constShadow.update(g_deviceContext, nullptr, 0, nullptr, &cbShadow, 0, 0);
-}
-
-// =============================
-// Renderizado de la escena
-// =============================
-void
-BaseApp::render() {
-    float ClearColor[4] = {0.0f, 0.125f, 0.3f, 1.0f};
-    float blendFactor[4] = {0.f, 0.f, 0.f, 0.f};
-
-    g_renderTargetView.render(g_deviceContext, g_depthStencilView, 1, ClearColor);
-    g_viewport.render(g_deviceContext);
-    g_depthStencilView.render(g_deviceContext);
-    g_shaderProgram.render(g_deviceContext);
-    m_neverChanges.render(g_deviceContext, 0, 1);
-    m_changeOnResize.render(g_deviceContext, 1, 1);
-
-    m_vertexBuffer.render(g_deviceContext, 0, 1);
-    m_indexBuffer.render(g_deviceContext, 0, 1, false, DXGI_FORMAT_R32_UINT);
-    m_changeEveryFrame.render(g_deviceContext, 2, 1);
-    m_changeEveryFrame.render(g_deviceContext, 2, 1, true);
-    g_deviceContext.PSSetShaderResources(0, 1, &g_pTextureRV);
-    g_deviceContext.PSSetSamplers(0, 1, &g_pSamplerLinear);
-    g_deviceContext.DrawIndexed(cubeMesh.m_index.size(), 0, 0);
-
-    g_shaderShadow.render(g_deviceContext, PIXEL_SHADER);
-    g_shadowBlendState.render(g_deviceContext, blendFactor, 0xffffffff);
-    g_deviceContext.OMSetDepthStencilState(g_pShadowDepthStencilState, 0);
-    m_vertexBuffer.render(g_deviceContext, 0, 1);
-    m_indexBuffer.render(g_deviceContext, 0, 1, false, DXGI_FORMAT_R32_UINT);
-    m_constShadow.render(g_deviceContext, 2, 1, true);
-    g_deviceContext.DrawIndexed(cubeMesh.m_index.size(), 0, 0);
-    g_shadowBlendState.render(g_deviceContext, blendFactor, 0xffffffff, true);
-    g_deviceContext.OMSetDepthStencilState(nullptr, 0);
-
-    g_userInterface.render();
-
-    g_swapChain.present();
-}
-
-// =============================
-// Liberación de recursos
-// =============================
-void
-BaseApp::destroy() {
-    g_userInterface.destroy();
-
-    g_deviceContext.ClearState();
-
-    g_shadowBlendState.destroy();
-    if (g_pShadowDepthStencilState)
-        g_pShadowDepthStencilState->Release();
-    g_shaderShadow.destroy();
-    if (g_pSamplerLinear)
-        g_pSamplerLinear->Release();
-    if (g_pTextureRV)
-        g_pTextureRV->Release();
-    m_neverChanges.destroy();
-    m_changeOnResize.destroy();
-    m_changeEveryFrame.destroy();
-    m_constShadow.destroy();
-    m_vertexBuffer.destroy();
-    m_indexBuffer.destroy();
-    g_shaderProgram.destroy();
-    g_depthStencil.destroy();
-    g_depthStencilView.destroy();
-    g_renderTargetView.destroy();
-    g_swapChain.destroy();
-    g_deviceContext.destroy();
-    if (g_device.m_device)
-        g_device.m_device->Release();
-}
-
-// =============================
-// Procedimiento de ventana
-// =============================
-LRESULT CALLBACK BaseApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-    if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam)) {
-        return true;
-    }
-
-    PAINTSTRUCT ps;
-    HDC hdc;
-
-    switch (message) {
-    case WM_PAINT:
-        hdc = BeginPaint(hWnd, &ps);
-        EndPaint(hWnd, &ps);
-        break;
-
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-
-    return 0;
 }

@@ -164,4 +164,3 @@ SwapChain::present() {
     ERROR("SwapChain", "present", "Swap chain is not initialized.");
 	}
 }
-

@@ -7,13 +7,6 @@ class DeviceContext;
 class Texture;
 class DepthStencilView;
 
-/**
- * @class RenderTargetView
- * @brief Representa una vista de destino de renderizado.
- *
- * Esta clase encapsula la vista de un recurso que se puede usar como destino de renderizado,
- * como el búfer de reserva o una textura.
- */
 class 
 RenderTargetView {
 public:
