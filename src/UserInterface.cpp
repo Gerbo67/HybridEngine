@@ -120,25 +120,25 @@ void UserInterface::mainMenuBar() {
                 showImportDialog();
             }
             ToolTip("Importar modelos FBX u OBJ");
-            
+
             ImGui::Separator();
-            
+
             if (ImGui::MenuItem("Exit", "Alt+F4")) {
                 show_exit_popup = true;
             }
             ToolTip("Salir de la aplicación");
-            
+
             ImGui::EndMenu();
         }
-        
+
         if (ImGui::BeginMenu("Options")) {
             if (ImGui::MenuItem("Show Object Controls", nullptr, &showObjectControls)) {
                 // Toggle object controls visibility
             }
             ToolTip("Mostrar/ocultar panel de controles del objeto");
-            
+
             ImGui::Separator();
-            
+
             if (ImGui::BeginMenu("UI Style")) {
                 if (ImGui::MenuItem("Dark")) {
                     darkStyle();
@@ -155,13 +155,13 @@ void UserInterface::mainMenuBar() {
                 ImGui::EndMenu();
             }
             ToolTip("Cambiar el estilo de la interfaz");
-            
+
             ImGui::EndMenu();
         }
-        
+
         ImGui::EndMainMenuBar();
     }
-    
+
     // Mostrar diálogo de salida si está activo
     if (show_exit_popup) {
         closeApp();
@@ -172,34 +172,34 @@ void UserInterface::objectControlPanel(EU::TSharedPointer<Actor> actor) {
     if (!showObjectControls || actor.isNull()) {
         return;
     }
-    
+
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 350, 25), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(330, 500), ImGuiCond_FirstUseEver);
-    
+
     if (ImGui::Begin("Object Controls", &showObjectControls)) {
         ImGui::Text("Selected Object: Actor %d", selectedActorIndex);
         ImGui::Separator();
-        
+
         if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
             transformControls(actor);
         }
-        
+
         if (ImGui::CollapsingHeader("Scale", ImGuiTreeNodeFlags_DefaultOpen)) {
             scaleControls(actor);
         }
-        
+
         if (ImGui::CollapsingHeader("Rotation", ImGuiTreeNodeFlags_DefaultOpen)) {
             rotationControls(actor);
         }
-        
+
         ImGui::Separator();
-        
+
         if (ImGui::Button("Reset Transform", ImVec2(-1, 0))) {
             auto transform = actor->getComponent<Transform>();
             if (transform) {
                 transform->setTransform(EU::Vector3(0.0f, 0.0f, 0.0f),
-                                       EU::Vector3(0.0f, 0.0f, 0.0f),
-                                       EU::Vector3(1.0f, 1.0f, 1.0f));
+                                        EU::Vector3(0.0f, 0.0f, 0.0f),
+                                        EU::Vector3(1.0f, 1.0f, 1.0f));
             }
         }
         ToolTip("Resetear todas las transformaciones del objeto");
@@ -209,18 +209,19 @@ void UserInterface::objectControlPanel(EU::TSharedPointer<Actor> actor) {
 
 void UserInterface::transformControls(EU::TSharedPointer<Actor> actor) {
     auto transform = actor->getComponent<Transform>();
-    if (!transform) return;
-    
+    if (!transform)
+        return;
+
     EU::Vector3 position = transform->getPosition();
-    float positionArray[3] = { position.x, position.y, position.z };
-    
+    float positionArray[3] = {position.x, position.y, position.z};
+
     vec3Control("Position", positionArray, 0.0f, 80.0f);
-    
+
     // Actualizar la posición si cambió
     if (positionArray[0] != position.x || positionArray[1] != position.y || positionArray[2] != position.z) {
         transform->setPosition(EU::Vector3(positionArray[0], positionArray[1], positionArray[2]));
     }
-    
+
     if (ImGui::IsItemHovered()) {
         ToolTip("Controla la posición del objeto en el espacio 3D");
     }
@@ -228,51 +229,52 @@ void UserInterface::transformControls(EU::TSharedPointer<Actor> actor) {
 
 void UserInterface::scaleControls(EU::TSharedPointer<Actor> actor) {
     auto transform = actor->getComponent<Transform>();
-    if (!transform) return;
-    
+    if (!transform)
+        return;
+
     EU::Vector3 scale = transform->getScale();
-    float scaleArray[3] = { scale.x, scale.y, scale.z };
-    
-    vec3Control("Scale", scaleArray, 1.0f, 80.0f);
-    
-    // Actualizar la escala si cambió
-    if (scaleArray[0] != scale.x || scaleArray[1] != scale.y || scaleArray[2] != scale.z) {
-        transform->setScale(EU::Vector3(scaleArray[0], scaleArray[1], scaleArray[2]));
-    }
-    
-    // Control de escala uniforme
+
     static bool uniformScale = true;
     ImGui::Checkbox("Uniform Scale", &uniformScale);
     ToolTip("Mantener proporciones al escalar");
-    
+
     if (uniformScale) {
-        static float uniformScaleValue = 1.0f;
-        floatControl("Uniform", &uniformScaleValue, 1.0f, 80.0f);
-        
-        if (ImGui::IsItemDeactivatedAfterEdit()) {
-            transform->setScale(EU::Vector3(uniformScaleValue, uniformScaleValue, uniformScaleValue));
+        float uniformValue = scale.x;
+
+        ImGui::PushItemWidth(-1);
+        if (ImGui::DragFloat("Uniform", &uniformValue, 0.01f, 0.0f, FLT_MAX, "%.2f")) {
+            transform->setScale(EU::Vector3(uniformValue, uniformValue, uniformValue));
+        }
+        ImGui::PopItemWidth();
+    } else {
+        float scaleArray[3] = {scale.x, scale.y, scale.z};
+        vec3Control("Scale", scaleArray, 1.0f, 80.0f);
+
+        if (scaleArray[0] != scale.x || scaleArray[1] != scale.y || scaleArray[2] != scale.z) {
+            transform->setScale(EU::Vector3(scaleArray[0], scaleArray[1], scaleArray[2]));
         }
     }
 }
 
 void UserInterface::rotationControls(EU::TSharedPointer<Actor> actor) {
     auto transform = actor->getComponent<Transform>();
-    if (!transform) return;
-    
+    if (!transform)
+        return;
+
     EU::Vector3 rotation = transform->getRotation();
-    float rotationArray[3] = { rotation.x, rotation.y, rotation.z };
-    
+    float rotationArray[3] = {rotation.x, rotation.y, rotation.z};
+
     vec3Control("Rotation", rotationArray, 0.0f, 80.0f);
-    
+
     // Actualizar la rotación si cambió
     if (rotationArray[0] != rotation.x || rotationArray[1] != rotation.y || rotationArray[2] != rotation.z) {
         transform->setRotation(EU::Vector3(rotationArray[0], rotationArray[1], rotationArray[2]));
     }
-    
+
     if (ImGui::IsItemHovered()) {
         ToolTip("Controla la rotación del objeto en grados");
     }
-    
+
     // Botones de rotación rápida
     ImGui::Text("Quick Rotation:");
     if (ImGui::Button("90° X")) {
@@ -294,7 +296,7 @@ void UserInterface::rotationControls(EU::TSharedPointer<Actor> actor) {
 
 std::wstring UserInterface::openFileDialog(const wchar_t* filter) {
     OPENFILENAMEW ofn; // Usamos la versión 'W' (Wide/Unicode)
-    wchar_t szFile[260] = { 0 };
+    wchar_t szFile[260] = {0};
 
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
@@ -316,7 +318,7 @@ std::wstring UserInterface::openFileDialog(const wchar_t* filter) {
 void UserInterface::showImportDialog() {
     // CAMBIO 2: Usar wstring y literales wide (L"...")
     std::wstring modelPath = openFileDialog(L"FBX Models (*.fbx)\0*.fbx\0All Files\0*.*\0");
-    
+
     if (!modelPath.empty()) {
         std::replace(modelPath.begin(), modelPath.end(), L'\\', L'/');
 
@@ -325,24 +327,24 @@ void UserInterface::showImportDialog() {
         if (!texturePath.empty()) {
             std::replace(texturePath.begin(), texturePath.end(), L'\\', L'/');
         }
-        
+
         if (onImportModel) {
             onImportModel(modelPath, texturePath);
         }
-        
+
         selectedFilePath = modelPath;
         ImGui::OpenPopup("Import Success");
     }
-    
+
     if (ImGui::BeginPopupModal("Import Success", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Model imported successfully!");
-        
+
         // CAMBIO 3: Convertir wstring a string solo para mostrar en ImGui
         std::string displayPath(selectedFilePath.begin(), selectedFilePath.end());
         ImGui::Text("File: %s", displayPath.c_str());
 
         ImGui::Separator();
-        
+
         if (ImGui::Button("OK", ImVec2(120, 0))) {
             ImGui::CloseCurrentPopup();
         }
@@ -354,7 +356,7 @@ void UserInterface::closeApp() {
     if (ImGui::BeginPopupModal("Exit Application", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("¿Estás seguro de que quieres salir?");
         ImGui::Separator();
-        
+
         if (ImGui::Button("Sí", ImVec2(120, 0))) {
             if (onExitApplication) {
                 onExitApplication();
@@ -369,7 +371,7 @@ void UserInterface::closeApp() {
         }
         ImGui::EndPopup();
     }
-    
+
     if (show_exit_popup) {
         ImGui::OpenPopup("Exit Application");
     }
@@ -491,27 +493,28 @@ void UserInterface::visualStudioStyle() {
 void UserInterface::outliner(const std::vector<EU::TSharedPointer<Actor>>& actors) {
     ImGui::SetNextWindowPos(ImVec2(10, 25), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(250, 400), ImGuiCond_FirstUseEver);
-    
+
     if (ImGui::Begin("Scene Outliner")) {
         ImGui::Text("Scene Objects (%zu)", actors.size());
         ImGui::Separator();
-        
+
         for (size_t i = 0; i < actors.size(); ++i) {
-            if (actors[i].isNull()) continue;
-            
+            if (actors[i].isNull())
+                continue;
+
             std::string actorName = "Actor " + std::to_string(i);
-            
+
             // Verificar si este actor está seleccionado
             bool isSelected = (selectedActorIndex == static_cast<int>(i));
-            
+
             if (ImGui::Selectable(actorName.c_str(), isSelected)) {
                 selectedActorIndex = static_cast<int>(i);
             }
-            
+
             if (ImGui::IsItemHovered()) {
                 ToolTip("Click para seleccionar este objeto");
             }
-            
+
             // Mostrar información adicional del actor
             if (isSelected) {
                 ImGui::Indent();
