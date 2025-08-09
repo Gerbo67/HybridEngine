@@ -65,6 +65,13 @@ struct
   XMFLOAT4 vMeshColor;
 };
 
+struct
+  CBLight {
+  XMMATRIX LightView;
+  XMMATRIX LightProjection;
+  XMFLOAT4 LightPos;
+};
+
 enum 
 ExtensionType {
   DDS = 0,

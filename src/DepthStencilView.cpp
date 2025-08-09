@@ -17,7 +17,15 @@ DepthStencilView::init(Device& device, Texture& depthStencil, DXGI_FORMAT format
     D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
     memset(&descDSV, 0, sizeof(descDSV));
     descDSV.Format = format;
-    descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+    
+    // Detect if the texture is multisampled to choose correct DSV dimension
+    D3D11_TEXTURE2D_DESC texDesc = {};
+    depthStencil.m_texture->GetDesc(&texDesc);
+    if (texDesc.SampleDesc.Count > 1) {
+        descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+    } else {
+        descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    }
     descDSV.Texture2D.MipSlice = 0;
 
     // Create depth stencil view

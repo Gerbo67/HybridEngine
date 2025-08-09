@@ -68,6 +68,14 @@ private:
     //----- Variables para el plano y la luz -----//
     XMFLOAT4 m_LightPos;
 
+    // Shadow mapping resources
+    Texture m_shadowTexture;          // depth texture (typeless)
+    Texture m_shadowSRVTexture;       // SRV referencing the depth texture
+    DepthStencilView m_shadowDSV;     // DSV for the shadow map
+    Viewport m_shadowViewport;        // viewport for shadow pass
+    Buffer m_lightBuffer;             // cbuffer for light matrices/pos
+    CBLight cbLight;                  // CPU-side data for the light buffer
+
     float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
 
     // Se eliminó el MeshComponent específico de la pistola.

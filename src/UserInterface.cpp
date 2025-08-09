@@ -529,3 +529,16 @@ void UserInterface::outliner(const std::vector<EU::TSharedPointer<Actor>>& actor
     }
     ImGui::End();
 }
+
+void UserInterface::lightControlPanel(float position[3]) {
+    ImGui::SetNextWindowPos(ImVec2(10, 440), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(260, 120), ImGuiCond_FirstUseEver);
+    if (ImGui::Begin("Light Controls")) {
+        ImGui::Text("Light Position");
+        vec3Control("Position", position, 0.0f, 75.0f);
+        if (ImGui::IsItemHovered()) {
+            ToolTip("Mueve la luz para ver sombras en tiempo real");
+        }
+    }
+    ImGui::End();
+}

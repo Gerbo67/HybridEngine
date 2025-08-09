@@ -110,6 +110,39 @@ HRESULT BaseApp::init() {
 
     m_userInterface.init(m_window.m_hWnd, m_device.m_device, m_deviceContext.m_deviceContext);
 
+    // Initialize shadow mapping resources
+    const unsigned int shadowSize = 1024;
+    hr = m_shadowTexture.init(m_device, shadowSize, shadowSize, DXGI_FORMAT_R24G8_TYPELESS,
+                              D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE, 1, 0);
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice", ("Failed to create shadow depth texture. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
+
+    hr = m_shadowDSV.init(m_device, m_shadowTexture, DXGI_FORMAT_D24_UNORM_S8_UINT);
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice", ("Failed to create shadow DSV. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
+
+    hr = m_shadowSRVTexture.init(m_device, m_shadowTexture, DXGI_FORMAT_R24_UNORM_X8_TYPELESS);
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice", ("Failed to create shadow SRV. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
+
+    hr = m_shadowViewport.init(shadowSize, shadowSize);
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice", ("Failed to initialize shadow viewport. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
+
+    hr = m_lightBuffer.init(m_device, sizeof(CBLight));
+    if (FAILED(hr)) {
+        ERROR("Main", "InitDevice", ("Failed to create light constant buffer. HRESULT: " + std::to_string(hr)).c_str());
+        return hr;
+    }
+
     // ===================================================================================
     // CÓDIGO ACTUALIZADO: Conexión del callback con normalización de escala.
     // ===================================================================================
@@ -216,6 +249,11 @@ BaseApp::update() {
     m_userInterface.mainMenuBar();
     m_userInterface.outliner(m_actors);
 
+    // Light controls UI
+    float lightPos[3] = { m_LightPos.x, m_LightPos.y, m_LightPos.z };
+    m_userInterface.lightControlPanel(lightPos);
+    m_LightPos = XMFLOAT4(lightPos[0], lightPos[1], lightPos[2], 1.0f);
+
     static float t = 0.0f;
     static DWORD dwTimeStart = 0;
     DWORD dwTimeCur = GetTickCount();
@@ -223,10 +261,23 @@ BaseApp::update() {
         dwTimeStart = dwTimeCur;
     t = (dwTimeCur - dwTimeStart) / 1000.0f;
 
+    // Update camera cbuffers
     cbNeverChanges.mView = XMMatrixTranspose(m_View);
     m_neverChanges.update(m_deviceContext, nullptr, 0, nullptr, &cbNeverChanges, 0, 0);
     cbChangesOnResize.mProjection = XMMatrixTranspose(m_Projection);
     m_changeOnResize.update(m_deviceContext, nullptr, 0, nullptr, &cbChangesOnResize, 0, 0);
+
+    // Compute and update light matrices buffer
+    XMVECTOR lightEye = XMVectorSet(m_LightPos.x, m_LightPos.y, m_LightPos.z, 1.0f);
+    XMVECTOR lightAt = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+    XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+    XMMATRIX lightView = XMMatrixLookAtLH(lightEye, lightAt, lightUp);
+    XMMATRIX lightProj = XMMatrixPerspectiveFovLH(XM_PIDIV4, 1.0f, 0.1f, 100.0f);
+
+    cbLight.LightView = XMMatrixTranspose(lightView);
+    cbLight.LightProjection = XMMatrixTranspose(lightProj);
+    cbLight.LightPos = m_LightPos;
+    m_lightBuffer.update(m_deviceContext, nullptr, 0, nullptr, &cbLight, 0, 0);
 
     for (auto& actor : m_actors) {
         if (!actor.isNull()) {
@@ -237,13 +288,58 @@ BaseApp::update() {
 
 void
 BaseApp::render() {
+    // ------------------ Shadow pass ------------------
+    // Set shadow viewport and DSV only
+    m_shadowViewport.render(m_deviceContext);
+    m_deviceContext.OMSetRenderTargets(0, nullptr, m_shadowDSV.m_depthStencilView);
+    // Clear shadow depth
+    m_deviceContext.ClearDepthStencilView(m_shadowDSV.m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+    // Backup camera matrices
+    XMMATRIX viewBackup = cbNeverChanges.mView;
+    XMMATRIX projBackup = cbChangesOnResize.mProjection;
+
+    // Use light matrices in camera constant buffers for the shadow pass
+    cbNeverChanges.mView = cbLight.LightView; // already transposed
+    m_neverChanges.update(m_deviceContext, nullptr, 0, nullptr, &cbNeverChanges, 0, 0);
+    cbChangesOnResize.mProjection = cbLight.LightProjection; // already transposed
+    m_changeOnResize.update(m_deviceContext, nullptr, 0, nullptr, &cbChangesOnResize, 0, 0);
+    // Bind VS constant buffers for shadow pass
+    m_neverChanges.render(m_deviceContext, 0, 1);
+    m_changeOnResize.render(m_deviceContext, 1, 1);
+
+    // Set vertex shader, but null pixel shader (depth-only)
+    m_shaderProgram.render(m_deviceContext, VERTEX_SHADER);
+    m_deviceContext.PSSetShader(nullptr, nullptr, 0);
+
+    // Draw only shadow casters
+    for (auto& actor : m_actors) {
+        if (!actor.isNull() && actor->canCastShadow()) {
+            actor->render(m_deviceContext);
+        }
+    }
+
+    // Restore camera matrices in constant buffers
+    cbNeverChanges.mView = viewBackup;
+    m_neverChanges.update(m_deviceContext, nullptr, 0, nullptr, &cbNeverChanges, 0, 0);
+    cbChangesOnResize.mProjection = projBackup;
+    m_changeOnResize.update(m_deviceContext, nullptr, 0, nullptr, &cbChangesOnResize, 0, 0);
+
+    // ------------------ Main pass ------------------
     m_renderTargetView.render(m_deviceContext, m_depthStencilView, 1, ClearColor);
     m_viewport.render(m_deviceContext);
     m_depthStencilView.render(m_deviceContext);
 
+    // Set full shader program
     m_shaderProgram.render(m_deviceContext);
+
+    // Bind camera constant buffers
     m_neverChanges.render(m_deviceContext, 0, 1);
     m_changeOnResize.render(m_deviceContext, 1, 1);
+
+    // Bind light cbuffer to both VS and PS and shadow map SRV to t1
+    m_lightBuffer.render(m_deviceContext, 3, 1, true);
+    m_shadowSRVTexture.render(m_deviceContext, 1, 1);
 
     for (auto& actor : m_actors) {
         if (!actor.isNull()) {
@@ -269,6 +365,12 @@ BaseApp::destroy() {
         }
     }
     m_actors.clear();
+
+    // Destroy shadow resources
+    m_shadowSRVTexture.destroy();
+    m_shadowDSV.destroy();
+    m_shadowTexture.destroy();
+    m_lightBuffer.destroy();
 
     m_neverChanges.destroy();
     m_changeOnResize.destroy();

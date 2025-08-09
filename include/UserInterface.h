@@ -110,6 +110,9 @@ public:
     void
     outliner(const std::vector<EU::TSharedPointer<Actor>>& actors);
 
+    void
+    lightControlPanel(float position[3]);
+
 private:
     bool checkboxValue = true;
     bool checkboxValue2 = false;
