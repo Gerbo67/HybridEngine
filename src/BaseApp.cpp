@@ -69,7 +69,7 @@ BaseApp::init() {
         planeMesh.m_numVertex = 4;
         planeMesh.m_numIndex = 6;
 
-        hr = m_PlaneTexture.init(m_device, L"Textures/Grass.dds", DDS);
+        hr = m_PlaneTexture.init(m_device, L"Textures/Wood.dds", DDS);
         if (FAILED(hr)) {
             ERROR("Main", "InitDevice", ("Failed to initialize Plane Texture. HRESULT: " + std::to_string(hr)).c_str());
             return hr;
