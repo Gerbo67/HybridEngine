@@ -44,51 +44,51 @@
 
 // Structures
 struct
-  SimpleVertex {
-  XMFLOAT3 Pos;
-  XMFLOAT2 Tex;
+    SimpleVertex {
+    XMFLOAT3 Pos;
+    XMFLOAT2 Tex;
 };
 
 struct
-  CBNeverChanges {
-  XMMATRIX mView;
+    CBNeverChanges {
+    XMMATRIX mView;
 };
 
 struct
-  CBChangeOnResize {
-  XMMATRIX mProjection;
+    CBChangeOnResize {
+    XMMATRIX mProjection;
 };
 
 struct
-  CBChangesEveryFrame {
-  XMMATRIX mWorld;
-  XMFLOAT4 vMeshColor;
+    CBChangesEveryFrame {
+    XMMATRIX mWorld;
+    XMFLOAT4 vMeshColor;
 };
 
 struct
-  CBLight {
-  XMMATRIX LightView;
-  XMMATRIX LightProjection;
-  XMFLOAT4 LightPos;
+    CBLight {
+    XMMATRIX LightView;
+    XMMATRIX LightProjection;
+    XMFLOAT4 LightPos;
 };
 
-enum 
-ExtensionType {
-  DDS = 0,
-  PNG = 1,
-  JPG = 2
+enum
+    ExtensionType {
+    DDS = 0,
+    PNG = 1,
+    JPG = 2
 };
 
-enum 
-ShaderType {
-  VERTEX_SHADER = 0,
-  PIXEL_SHADER = 1
+enum
+    ShaderType {
+    VERTEX_SHADER = 0,
+    PIXEL_SHADER = 1
 };
 
-enum 
-ComponentType {
-  NONE = 0,     ///< Tipo de componente no especificado.
-  TRANSFORM = 1,///< Componente de transformación.
-  MESH = 2,     ///< Componente de malla.
-  MATERIAL = 3  ///< Componente de material.
+enum
+    ComponentType {
+    NONE = 0, ///< Tipo de componente no especificado.
+    TRANSFORM = 1, ///< Componente de transformación.
+    MESH = 2, ///< Componente de malla.
+    MATERIAL = 3 ///< Componente de material.
 };

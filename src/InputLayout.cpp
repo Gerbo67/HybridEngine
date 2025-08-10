@@ -2,10 +2,10 @@
 #include "Device.h"
 #include "DeviceContext.h"
 
-HRESULT 
-InputLayout::init(Device& device, 
-                                    std::vector<D3D11_INPUT_ELEMENT_DESC>& Layout, 
-                                    ID3DBlob* VertexShaderData) {
+HRESULT
+InputLayout::init(Device& device,
+                  std::vector<D3D11_INPUT_ELEMENT_DESC>& Layout,
+                  ID3DBlob* VertexShaderData) {
     if (Layout.empty()) {
         ERROR("InputLayout", "init", "Layout vector is empty.");
         return E_INVALIDARG;
@@ -16,14 +16,14 @@ InputLayout::init(Device& device,
     }
 
     HRESULT hr = device.CreateInputLayout(Layout.data(),
-                                                                                static_cast<unsigned int>(Layout.size()),
-                                                                                VertexShaderData->GetBufferPointer(),
-                                                                                VertexShaderData->GetBufferSize(),
-                                                                                &m_inputLayout);
+                                          static_cast<unsigned int>(Layout.size()),
+                                          VertexShaderData->GetBufferPointer(),
+                                          VertexShaderData->GetBufferSize(),
+                                          &m_inputLayout);
 
     if (FAILED(hr)) {
         ERROR("InputLayout", "init",
-            ("Failed to create InputLayout. HRESULT: " + std::to_string(hr)).c_str());
+              ("Failed to create InputLayout. HRESULT: " + std::to_string(hr)).c_str());
         return hr;
     }
 

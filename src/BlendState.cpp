@@ -28,7 +28,7 @@ BlendState::init(Device& device) {
     HRESULT hr = device.m_device->CreateBlendState(&blendDesc, &m_blendState);
     if (FAILED(hr)) {
         ERROR("BlendState", "init",
-            ("Failed to create blend state. HRESULT: " + std::to_string(hr)).c_str());
+              ("Failed to create blend state. HRESULT: " + std::to_string(hr)).c_str());
         return hr;
     }
     return S_OK;
@@ -36,9 +36,9 @@ BlendState::init(Device& device) {
 
 void
 BlendState::render(DeviceContext& deviceContext,
-    float* blendFactor,
-    unsigned int sampleMask,
-    bool reset) {
+                   float* blendFactor,
+                   unsigned int sampleMask,
+                   bool reset) {
     if (!deviceContext.m_deviceContext) {
         ERROR("RenderTargetView", "render", "DeviceContext is nullptr.");
         return;
@@ -47,7 +47,7 @@ BlendState::render(DeviceContext& deviceContext,
         ERROR("BlendState", "render", "BlendState is not initialized.");
         return;
     }
-    float defaultBlendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
+    float defaultBlendFactor[4] = {0.f, 0.f, 0.f, 0.f};
 
     if (!blendFactor) {
         blendFactor = defaultBlendFactor;
@@ -55,8 +55,7 @@ BlendState::render(DeviceContext& deviceContext,
 
     if (!reset) {
         deviceContext.m_deviceContext->OMSetBlendState(m_blendState, blendFactor, sampleMask);
-    }
-    else {
+    } else {
         deviceContext.m_deviceContext->OMSetBlendState(nullptr, blendFactor, sampleMask);
     }
 }

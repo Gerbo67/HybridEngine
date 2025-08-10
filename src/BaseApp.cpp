@@ -1,7 +1,8 @@
 ﻿#include "BaseApp.h"
-#include "ECS/Transform.h" // Necesario para manipular el componente Transform
+#include "ECS/Transform.h"
 
-HRESULT BaseApp::init() {
+HRESULT
+BaseApp::init() {
     HRESULT hr = S_OK;
 
     hr = m_swapChain.init(m_device, m_deviceContext, m_backBuffer, m_window);
@@ -265,7 +266,7 @@ BaseApp::update() {
     m_userInterface.outliner(m_actors);
 
     // Light controls UI
-    float lightPos[3] = { m_LightPos.x, m_LightPos.y, m_LightPos.z };
+    float lightPos[3] = {m_LightPos.x, m_LightPos.y, m_LightPos.z};
     m_userInterface.lightControlPanel(lightPos);
     m_LightPos = XMFLOAT4(lightPos[0], lightPos[1], lightPos[2], 1.0f);
 
@@ -328,7 +329,8 @@ BaseApp::render() {
     m_shadowViewport.render(m_deviceContext);
     m_deviceContext.OMSetRenderTargets(0, nullptr, m_shadowDSV.m_depthStencilView);
     // Clear shadow depth
-    m_deviceContext.ClearDepthStencilView(m_shadowDSV.m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    m_deviceContext.ClearDepthStencilView(m_shadowDSV.m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f,
+                                          0);
 
     // Backup camera matrices
     XMMATRIX viewBackup = cbNeverChanges.mView;

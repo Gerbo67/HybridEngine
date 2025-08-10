@@ -3,40 +3,77 @@
 #include "MeshComponent.h"
 #include "fbxsdk.h"
 
-class 
+/**
+ * @brief Sistema de carga de modelos 3D que soporta formatos OBJ y FBX para importación de assets.
+ * 
+ * ModelLoader proporciona funcionalidad completa para cargar modelos 3D desde archivos externos,
+ * procesando geometría, materiales y texturas. Soporta el pipeline de importación FBX con SDK nativo
+ * y carga simple de modelos OBJ, convirtiendo datos externos en componentes de malla utilizables
+ * por el motor de renderizado.
+ */
+class
 ModelLoader {
 public:
     ModelLoader() = default;
     ~ModelLoader() = default;
 
-    /* OBJ MODEL LOADER*/
+    /**
+     * @brief Carga un modelo 3D desde un archivo OBJ.
+     * @param filePath Ruta al archivo OBJ a cargar
+     * @return Componente de malla con los datos del modelo cargado
+     */
     MeshComponent
-    LoadOBJModel(const std::string & filePath);
+    LoadOBJModel(const std::string& filePath);
 
-    /* FBX MODEL LOADER*/
+    /**
+     * @brief Inicializa el manager del SDK de FBX para operaciones de carga.
+     * @return true si la inicialización fue exitosa, false en caso contrario
+     */
     bool
     InitializeFBXManager();
 
-    bool 
-    LoadFBXModel(const std::string & filePath);
+    /**
+     * @brief Carga un modelo 3D desde un archivo FBX.
+     * @param filePath Ruta al archivo FBX a cargar
+     * @return true si la carga fue exitosa, false en caso contrario
+     */
+    bool
+    LoadFBXModel(const std::string& filePath);
 
-    void 
-  ProcessFBXNode(FbxNode* node);
+    /**
+     * @brief Procesa un nodo FBX y sus hijos recursivamente.
+     * @param node Nodo FBX a procesar
+     */
+    void
+    ProcessFBXNode(FbxNode* node);
 
-    void 
+    /**
+     * @brief Extrae datos de geometría de una malla FBX.
+     * @param node Nodo FBX que contiene la malla a procesar
+     */
+    void
     ProcessFBXMesh(FbxNode* node);
 
-    void 
+    /**
+     * @brief Procesa información de materiales de un objeto FBX.
+     * @param material Material FBX a procesar
+     */
+    void
     ProcessFBXMaterials(FbxSurfaceMaterial* material);
 
-    std::vector<std::string> 
-  GetTextureFileNames() const { return textureFileNames; }
+    /**
+     * @brief Obtiene los nombres de archivos de texturas encontrados durante la carga.
+     * @return Vector de nombres de archivos de textura
+     */
+    std::vector<std::string>
+    GetTextureFileNames() const { return textureFileNames; }
 
 private:
-    FbxManager* lSdkManager;
-    FbxScene* lScene;
-    std::vector<std::string> textureFileNames;
+    FbxManager* lSdkManager; ///< Manager del SDK FBX para operaciones de carga
+    FbxScene* lScene; ///< Escena FBX cargada en memoria
+    std::vector<std::string> textureFileNames; ///< Lista de nombres de archivos de textura
+
 public:
-    std::string modelName;
-    std::vector<MeshComponent> meshes;
+    std::string modelName; ///< Nombre del modelo cargado
+    std::vector<MeshComponent> meshes; ///< Vector de mallas extraídas del modelo
 };

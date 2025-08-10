@@ -200,7 +200,7 @@ ModelLoader::ProcessFBXMesh(FbxNode* node) {
                     const FbxVector2 uv = uvArray.GetAt(uvIndex);
                     currentVertex.Tex = XMFLOAT2((float)uv[0], 1.0f - (float)uv[1]);
                 } else {
-                    currentVertex.Tex = XMFLOAT2(0.0f, 0.0f); // UV por defecto si algo falla
+                    currentVertex.Tex = XMFLOAT2(0.0f, 0.0f);
                 }
             } else {
                 // Si no hay elemento UV en la malla, asignamos una UV por defecto.

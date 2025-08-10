@@ -9,7 +9,7 @@ class DeviceContext;
  * La clase Component define la interfaz básica que todos los componentes deben implementar,
  * permitiendo actualizar y renderizar el componente, así como obtener su tipo.
  */
-class 
+class
 Component {
 public:
     /**
@@ -21,7 +21,9 @@ public:
      * @brief Constructor con tipo de componente.
      * @param type Tipo del componente.
      */
-    Component(const ComponentType type) : m_type(type) {}
+    Component(const ComponentType type) :
+        m_type(type) {
+    }
 
     /**
      * @brief Destructor virtual.
@@ -36,14 +38,14 @@ public:
      * @brief Método virtual puro para actualizar el componente.
      * @param deltaTime El tiempo transcurrido desde la última actualización.
      */
-    virtual void 
+    virtual void
     update(float deltaTime) = 0;
 
     /**
      * @brief Método virtual puro para renderizar el componente.
      * @param deviceContext Contexto del dispositivo para operaciones gráficas.
      */
-    virtual void 
+    virtual void
     render(DeviceContext& deviceContext) = 0;
 
     virtual void
@@ -53,8 +55,9 @@ public:
      * @brief Obtiene el tipo del componente.
      * @return El tipo del componente.
      */
-    ComponentType 
+    ComponentType
     getType() const { return m_type; }
+
 protected:
     ComponentType m_type; ///< Tipo del componente.
 

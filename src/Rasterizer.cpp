@@ -25,16 +25,16 @@ Rasterizer::init(Device device) {
     return hr;
 }
 
-void 
+void
 Rasterizer::update() {
 }
 
-void 
+void
 Rasterizer::render(DeviceContext& deviceContext) {
     deviceContext.RSSetState(m_rasterizerState);
 }
 
-void 
+void
 Rasterizer::destroy() {
     SAFE_RELEASE(m_rasterizerState);
 }

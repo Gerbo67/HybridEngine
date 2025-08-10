@@ -1,6 +1,6 @@
 ﻿#include "Window.h"
 
-HRESULT 
+HRESULT
 Window::init(HINSTANCE hInstance, int nCmdShow, WNDPROC wndproc) {
     // Store  instance of the class
     m_hInst = hInstance;
@@ -27,20 +27,20 @@ Window::init(HINSTANCE hInstance, int nCmdShow, WNDPROC wndproc) {
     }
 
     // Create window
-    RECT rc = { 0, 0, 1200, 1010 };
+    RECT rc = {0, 0, 1200, 1010};
     m_rect = rc;
 
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
-    m_hWnd = CreateWindow("TutorialWindowClass", 
+    m_hWnd = CreateWindow("TutorialWindowClass",
                           m_windowName.c_str(),
                           WS_OVERLAPPEDWINDOW,
-                          CW_USEDEFAULT, 
-                          CW_USEDEFAULT, 
-                          m_rect.right -  m_rect.left, 
-                          m_rect.bottom - m_rect.top, 
-                          nullptr, 
-                          nullptr, 
+                          CW_USEDEFAULT,
+                          CW_USEDEFAULT,
+                          m_rect.right - m_rect.left,
+                          m_rect.bottom - m_rect.top,
+                          nullptr,
+                          nullptr,
                           hInstance,
                           nullptr);
 
@@ -65,10 +65,10 @@ void
 Window::update() {
 }
 
-void 
+void
 Window::render() {
 }
 
-void 
+void
 Window::destroy() {
 }

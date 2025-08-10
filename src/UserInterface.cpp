@@ -32,18 +32,21 @@ void UserInterface::init(void* window, ID3D11Device* device, ID3D11DeviceContext
     ImGui_ImplDX11_Init(device, deviceContext);
 }
 
-void UserInterface::update() {
+void
+UserInterface::update() {
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 }
 
-void UserInterface::render() {
+void
+UserInterface::render() {
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
-void UserInterface::vec3Control(const std::string& label, float* values, float resetValue, float columnWidth) {
+void
+UserInterface::vec3Control(const std::string& label, float* values, float resetValue, float columnWidth) {
     ImGui::PushID(label.c_str());
 
     ImGui::Columns(2);
@@ -97,7 +100,8 @@ void UserInterface::vec3Control(const std::string& label, float* values, float r
     ImGui::PopID();
 }
 
-void UserInterface::floatControl(const std::string& label, float* value, float resetValue, float columnWidth) {
+void
+UserInterface::floatControl(const std::string& label, float* value, float resetValue, float columnWidth) {
     ImGui::PushID(label.c_str());
 
     ImGui::Columns(2);
@@ -113,7 +117,8 @@ void UserInterface::floatControl(const std::string& label, float* value, float r
     ImGui::PopID();
 }
 
-void UserInterface::mainMenuBar() {
+void
+UserInterface::mainMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("Import Model", "Ctrl+I")) {
@@ -168,7 +173,8 @@ void UserInterface::mainMenuBar() {
     }
 }
 
-void UserInterface::objectControlPanel(EU::TSharedPointer<Actor> actor) {
+void
+UserInterface::objectControlPanel(EU::TSharedPointer<Actor> actor) {
     if (!showObjectControls || actor.isNull()) {
         return;
     }
@@ -212,7 +218,8 @@ void UserInterface::objectControlPanel(EU::TSharedPointer<Actor> actor) {
     ImGui::End();
 }
 
-void UserInterface::transformControls(EU::TSharedPointer<Actor> actor) {
+void
+UserInterface::transformControls(EU::TSharedPointer<Actor> actor) {
     if (selectedActorIndex == 0) {
         ImGui::Text("Position: Locked (Floor)");
         ToolTip("El piso no se puede mover");
@@ -237,7 +244,8 @@ void UserInterface::transformControls(EU::TSharedPointer<Actor> actor) {
     }
 }
 
-void UserInterface::scaleControls(EU::TSharedPointer<Actor> actor) {
+void
+UserInterface::scaleControls(EU::TSharedPointer<Actor> actor) {
     if (selectedActorIndex == 0) {
         ImGui::Text("Scale: Locked (Floor)");
         ToolTip("La escala del piso está bloqueada");
@@ -271,7 +279,8 @@ void UserInterface::scaleControls(EU::TSharedPointer<Actor> actor) {
     }
 }
 
-void UserInterface::rotationControls(EU::TSharedPointer<Actor> actor) {
+void
+UserInterface::rotationControls(EU::TSharedPointer<Actor> actor) {
     if (selectedActorIndex == 0) {
         ImGui::Text("Rotation: Locked (Floor)");
         ToolTip("La rotación del piso está bloqueada");
@@ -314,8 +323,9 @@ void UserInterface::rotationControls(EU::TSharedPointer<Actor> actor) {
     ToolTip("Rotar 90 grados en el eje seleccionado");
 }
 
-std::wstring UserInterface::openFileDialog(const wchar_t* filter) {
-    OPENFILENAMEW ofn; // Usamos la versión 'W' (Wide/Unicode)
+std::wstring
+UserInterface::openFileDialog(const wchar_t* filter) {
+    OPENFILENAMEW ofn;
     wchar_t szFile[260] = {0};
 
     ZeroMemory(&ofn, sizeof(ofn));
@@ -335,8 +345,8 @@ std::wstring UserInterface::openFileDialog(const wchar_t* filter) {
 }
 
 
-void UserInterface::showImportDialog() {
-    // CAMBIO 2: Usar wstring y literales wide (L"...")
+void
+UserInterface::showImportDialog() {
     std::wstring modelPath = openFileDialog(L"FBX Models (*.fbx)\0*.fbx\0All Files\0*.*\0");
 
     if (!modelPath.empty()) {
@@ -372,7 +382,8 @@ void UserInterface::showImportDialog() {
     }
 }
 
-void UserInterface::closeApp() {
+void
+UserInterface::closeApp() {
     if (ImGui::BeginPopupModal("Exit Application", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("¿Estás seguro de que quieres salir?");
         ImGui::Separator();
@@ -397,7 +408,8 @@ void UserInterface::closeApp() {
     }
 }
 
-void UserInterface::ToolTip(std::string icon, std::string tip) {
+void
+UserInterface::ToolTip(std::string icon, std::string tip) {
     if (ImGui::IsItemHovered()) {
         ImGui::BeginTooltip();
         ImGui::Text("%s %s", icon.c_str(), tip.c_str());
@@ -405,7 +417,8 @@ void UserInterface::ToolTip(std::string icon, std::string tip) {
     }
 }
 
-void UserInterface::ToolTip(std::string tip) {
+void
+UserInterface::ToolTip(std::string tip) {
     if (ImGui::IsItemHovered()) {
         ImGui::BeginTooltip();
         ImGui::Text("%s", tip.c_str());
@@ -413,11 +426,13 @@ void UserInterface::ToolTip(std::string tip) {
     }
 }
 
-void UserInterface::darkStyle() {
+void
+UserInterface::darkStyle() {
     ImGui::StyleColorsDark();
 }
 
-void UserInterface::greyStyle() {
+void
+UserInterface::greyStyle() {
     ImGuiStyle& style = ImGui::GetStyle();
     style.Colors[ImGuiCol_Text] = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
     style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
@@ -448,7 +463,8 @@ void UserInterface::greyStyle() {
     style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.67f, 0.67f, 0.67f, 0.39f);
 }
 
-void UserInterface::GameMakerStyle() {
+void
+UserInterface::GameMakerStyle() {
     ImGuiStyle& style = ImGui::GetStyle();
     style.Colors[ImGuiCol_Text] = ImVec4(0.92f, 0.92f, 0.92f, 1.00f);
     style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.44f, 0.44f, 0.44f, 1.00f);
@@ -479,7 +495,8 @@ void UserInterface::GameMakerStyle() {
     style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.93f, 0.65f, 0.14f, 1.00f);
 }
 
-void UserInterface::visualStudioStyle() {
+void
+UserInterface::visualStudioStyle() {
     ImGuiStyle& style = ImGui::GetStyle();
     style.Colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
@@ -510,7 +527,8 @@ void UserInterface::visualStudioStyle() {
     style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.67f, 0.67f, 0.67f, 0.39f);
 }
 
-void UserInterface::outliner(const std::vector<EU::TSharedPointer<Actor>>& actors) {
+void
+UserInterface::outliner(const std::vector<EU::TSharedPointer<Actor>>& actors) {
     ImGui::SetNextWindowPos(ImVec2(10, 25), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(250, 400), ImGuiCond_FirstUseEver);
 
@@ -550,7 +568,8 @@ void UserInterface::outliner(const std::vector<EU::TSharedPointer<Actor>>& actor
     ImGui::End();
 }
 
-void UserInterface::lightControlPanel(float position[3]) {
+void
+UserInterface::lightControlPanel(float position[3]) {
     ImGui::SetNextWindowPos(ImVec2(10, 440), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(260, 120), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Light Controls")) {
@@ -563,7 +582,8 @@ void UserInterface::lightControlPanel(float position[3]) {
     ImGui::End();
 }
 
-void UserInterface::cameraControlPanel(float* yawDeg, float* pitchDeg, float* distance) {
+void
+UserInterface::cameraControlPanel(float* yawDeg, float* pitchDeg, float* distance) {
     ImGui::SetNextWindowPos(ImVec2(280, 440), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(280, 140), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Camera")) {
