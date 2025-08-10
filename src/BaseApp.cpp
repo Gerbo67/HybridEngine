@@ -84,6 +84,7 @@ HRESULT BaseApp::init() {
         m_APlane->getComponent<Transform>()->setTransform(EU::Vector3(0.0f, -5.0f, 0.0f), EU::Vector3(0.0f, 0.0f, 0.0f),
                                                           EU::Vector3(1.0f, 1.0f, 1.0f));
         m_APlane->setCastShadow(false);
+        m_APlane->setReceiveShadow(true);
         m_actors.push_back(m_APlane);
     } else {
         ERROR("Main", "InitDevice", "Failed to create Plane Actor.");
@@ -201,6 +202,14 @@ HRESULT BaseApp::init() {
             normalizedMeshes.push_back(newMesh);
         }
 
+        // 4.1 Calcular la base (minY) del modelo ya normalizado para ubicarlo sobre el piso
+        float minYOrig = XMVectorGetY(minPoint);
+        float centerY = XMVectorGetY(center);
+        float minYNormalized = (minYOrig - centerY) * scaleFactor; // base del modelo en espacio normalizado
+        const float floorY = -5.0f;
+        const float epsilon = 0.01f; // pequeño desplazamiento sobre el piso
+        float placeY = floorY - minYNormalized + epsilon;
+
         // 5. Crear y configurar el Actor con la malla normalizada
         EU::TSharedPointer<Actor> newActor = EU::MakeShared<Actor>(m_device);
         if (newActor.isNull()) {
@@ -211,14 +220,19 @@ HRESULT BaseApp::init() {
         std::vector<Texture> textures;
         if (!texturePath.empty()) {
             Texture newTexture;
-            // CAMBIO 4: Llama a init con el wstring directamente.
-            // Añade un log de error para estar 100% seguros.
             if (SUCCEEDED(newTexture.init(m_device, texturePath, DDS))) {
                 textures.push_back(newTexture);
             } else {
-                // Este error ya no debería aparecer, pero es una buena práctica mantenerlo.
                 std::string texturePathStr(texturePath.begin(), texturePath.end());
                 ERROR("BaseApp", "onImportModel", ("FALLO AL INICIALIZAR LA TEXTURA DDS: " + texturePathStr).c_str());
+            }
+        } else {
+            // Textura por defecto si el usuario no selecciona una
+            Texture defaultTex;
+            if (SUCCEEDED(defaultTex.init(m_device, L"seafloor.dds", DDS))) {
+                textures.push_back(defaultTex);
+            } else {
+                ERROR("BaseApp", "onImportModel", "No se pudo cargar la textura por defecto seafloor.dds");
             }
         }
 
@@ -227,11 +241,12 @@ HRESULT BaseApp::init() {
 
         // La escala ahora es (1, 1, 1) porque el modelo base ya está en el tamaño correcto
         newActor->getComponent<Transform>()->setTransform(
-            EU::Vector3(0.0f, 0.0f, 0.0f), // Posición
+            EU::Vector3(0.0f, placeY, 0.0f), // Base del modelo ligeramente sobre el piso
             EU::Vector3(0.0f, 0.0f, 0.0f), // Rotación
             EU::Vector3(1.0f, 1.0f, 1.0f)); // Escala
 
         newActor->setCastShadow(true);
+        newActor->setReceiveShadow(false); // Evitar auto-sombra en el propio FBX
         m_actors.push_back(newActor);
     };
 
@@ -254,12 +269,32 @@ BaseApp::update() {
     m_userInterface.lightControlPanel(lightPos);
     m_LightPos = XMFLOAT4(lightPos[0], lightPos[1], lightPos[2], 1.0f);
 
+    // Camera controls UI
+    m_userInterface.cameraControlPanel(&m_camYawDeg, &m_camPitchDeg, &m_camDistance);
+
     static float t = 0.0f;
     static DWORD dwTimeStart = 0;
     DWORD dwTimeCur = GetTickCount();
     if (dwTimeStart == 0)
         dwTimeStart = dwTimeCur;
     t = (dwTimeCur - dwTimeStart) / 1000.0f;
+
+    // Compute orbit camera view from yaw/pitch/distance around floor center
+    {
+        float yawRad = m_camYawDeg * (XM_PI / 180.0f);
+        float pitchRad = m_camPitchDeg * (XM_PI / 180.0f);
+        float cy = cosf(yawRad);
+        float sy = sinf(yawRad);
+        float cp = cosf(pitchRad);
+        float sp = sinf(pitchRad);
+        float ox = sy * cp * m_camDistance;
+        float oy = sp * m_camDistance;
+        float oz = cy * cp * m_camDistance;
+        XMVECTOR Eye = XMVectorSet(m_camTarget.x + ox, m_camTarget.y + oy, m_camTarget.z + oz, 1.0f);
+        XMVECTOR At = XMVectorSet(m_camTarget.x, m_camTarget.y, m_camTarget.z, 1.0f);
+        XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+        m_View = XMMatrixLookAtLH(Eye, At, Up);
+    }
 
     // Update camera cbuffers
     cbNeverChanges.mView = XMMatrixTranspose(m_View);

@@ -113,6 +113,9 @@ public:
     void
     lightControlPanel(float position[3]);
 
+    void
+    cameraControlPanel(float* yawDeg, float* pitchDeg, float* distance);
+
 private:
     bool checkboxValue = true;
     bool checkboxValue2 = false;

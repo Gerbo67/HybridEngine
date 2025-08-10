@@ -74,16 +74,25 @@ PS_INPUT VS(VS_INPUT input)
 //--------------------------------------------------------------------------------------
 float4 PS(PS_INPUT input) : SV_Target
 {
-    float4 baseCol = txDiffuse.Sample(samLinear, input.Tex) * vMeshColor;
+    // Multiplicar solo RGB por el color del mesh y mantener alpha opaco
+    float4 baseCol = txDiffuse.Sample(samLinear, input.Tex) * float4(vMeshColor.rgb, 1.0f);
 
-    // Project from light clip space to texture coords
+    // Si este mesh no debe recibir sombras, omitir el muestreo del shadow map
+    if (vMeshColor.a < 0.5f)
+    {
+        baseCol.a = 1.0f;
+        return baseCol;
+    }
+
+    // Proyección desde el espacio de clip de la luz a coordenadas de textura
     float3 projCoords = input.LightPos.xyz / input.LightPos.w;
     float2 shadowUV = projCoords.xy * 0.5f + 0.5f;
     float currentDepth = projCoords.z * 0.5f + 0.5f; // map from [-1,1] to [0,1]
 
-    // If outside the shadow map, consider lit
+    // Si está fuera del shadow map, considerar iluminado
     if (shadowUV.x < 0.0f || shadowUV.x > 1.0f || shadowUV.y < 0.0f || shadowUV.y > 1.0f)
     {
+        baseCol.a = 1.0f;
         return baseCol;
     }
 
@@ -92,6 +101,7 @@ float4 PS(PS_INPUT input) : SV_Target
     float visibility = (currentDepth - bias) > shadowDepth ? 0.35f : 1.0f;
 
     baseCol.rgb *= visibility;
+    baseCol.a = 1.0f;
     return baseCol;
 }
 

@@ -75,7 +75,7 @@ Actor::update(float deltaTime, DeviceContext& deviceContext) {
 
 	// Update the model buffer
 	m_model.mWorld = XMMatrixTranspose(getComponent<Transform>()->matrix);
-	m_model.vMeshColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	m_model.vMeshColor = XMFLOAT4(1.0f, 1.0f, 1.0f, m_receiveShadow ? 1.0f : 0.0f);
 
 	// Update the constant buffer
 	m_modelBuffer.update(deviceContext, nullptr, 0, nullptr, &m_model, 0, 0);

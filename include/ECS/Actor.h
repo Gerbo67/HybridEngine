@@ -20,6 +20,10 @@ public:
    * @brief Constructor por defecto.
    */
   Actor() = default;
+  
+  // Control de recepción de sombras (sólo para sombreado en el pixel shader)
+  void setReceiveShadow(bool v) { m_receiveShadow = v; }
+  bool getReceiveShadow() const { return m_receiveShadow; }
 
   /**
    * @brief Constructor que inicializa el actor con un dispositivo.
@@ -118,4 +122,5 @@ private:
   XMFLOAT4                            m_LightPos;
   std::string m_name = "Actor";         ///< Nombre del actor.
 	bool castShadow = true;              ///< Indica si el actor proyecta sombras.
+  bool m_receiveShadow = true;         ///< Indica si el actor recibe sombras (para el PS).
 };

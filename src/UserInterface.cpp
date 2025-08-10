@@ -194,20 +194,30 @@ void UserInterface::objectControlPanel(EU::TSharedPointer<Actor> actor) {
 
         ImGui::Separator();
 
-        if (ImGui::Button("Reset Transform", ImVec2(-1, 0))) {
-            auto transform = actor->getComponent<Transform>();
-            if (transform) {
-                transform->setTransform(EU::Vector3(0.0f, 0.0f, 0.0f),
-                                        EU::Vector3(0.0f, 0.0f, 0.0f),
-                                        EU::Vector3(1.0f, 1.0f, 1.0f));
+        if (selectedActorIndex != 0) {
+            if (ImGui::Button("Reset Transform", ImVec2(-1, 0))) {
+                auto transform = actor->getComponent<Transform>();
+                if (transform) {
+                    transform->setTransform(EU::Vector3(0.0f, 0.0f, 0.0f),
+                                            EU::Vector3(0.0f, 0.0f, 0.0f),
+                                            EU::Vector3(1.0f, 1.0f, 1.0f));
+                }
             }
+            ToolTip("Resetear todas las transformaciones del objeto");
+        } else {
+            ImGui::Text("Reset Transform: Locked (Floor)");
+            ToolTip("El piso no se puede resetear desde la UI");
         }
-        ToolTip("Resetear todas las transformaciones del objeto");
     }
     ImGui::End();
 }
 
 void UserInterface::transformControls(EU::TSharedPointer<Actor> actor) {
+    if (selectedActorIndex == 0) {
+        ImGui::Text("Position: Locked (Floor)");
+        ToolTip("El piso no se puede mover");
+        return;
+    }
     auto transform = actor->getComponent<Transform>();
     if (!transform)
         return;
@@ -228,6 +238,11 @@ void UserInterface::transformControls(EU::TSharedPointer<Actor> actor) {
 }
 
 void UserInterface::scaleControls(EU::TSharedPointer<Actor> actor) {
+    if (selectedActorIndex == 0) {
+        ImGui::Text("Scale: Locked (Floor)");
+        ToolTip("La escala del piso está bloqueada");
+        return;
+    }
     auto transform = actor->getComponent<Transform>();
     if (!transform)
         return;
@@ -257,6 +272,11 @@ void UserInterface::scaleControls(EU::TSharedPointer<Actor> actor) {
 }
 
 void UserInterface::rotationControls(EU::TSharedPointer<Actor> actor) {
+    if (selectedActorIndex == 0) {
+        ImGui::Text("Rotation: Locked (Floor)");
+        ToolTip("La rotación del piso está bloqueada");
+        return;
+    }
     auto transform = actor->getComponent<Transform>();
     if (!transform)
         return;
@@ -539,6 +559,19 @@ void UserInterface::lightControlPanel(float position[3]) {
         if (ImGui::IsItemHovered()) {
             ToolTip("Mueve la luz para ver sombras en tiempo real");
         }
+    }
+    ImGui::End();
+}
+
+void UserInterface::cameraControlPanel(float* yawDeg, float* pitchDeg, float* distance) {
+    ImGui::SetNextWindowPos(ImVec2(280, 440), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(280, 140), ImGuiCond_FirstUseEver);
+    if (ImGui::Begin("Camera")) {
+        ImGui::Text("Orbit Camera");
+        ImGui::SliderFloat("Yaw (deg)", yawDeg, -180.0f, 180.0f, "%.1f");
+        ImGui::SliderFloat("Pitch (deg)", pitchDeg, -89.0f, 89.0f, "%.1f");
+        ImGui::SliderFloat("Distance", distance, 1.0f, 50.0f, "%.2f");
+        ToolTip("Camara orbital: Yaw/Pitch/Distancia alrededor del piso");
     }
     ImGui::End();
 }

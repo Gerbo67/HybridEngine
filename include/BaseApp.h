@@ -65,6 +65,12 @@ private:
     XMMATRIX m_View;
     XMMATRIX m_Projection;
 
+    // Orbit camera parameters
+    float m_camYawDeg = 0.0f;
+    float m_camPitchDeg = 15.0f;
+    float m_camDistance = 10.0f;
+    XMFLOAT3 m_camTarget = XMFLOAT3(0.0f, -5.0f, 0.0f);
+
     //----- Variables para el plano y la luz -----//
     XMFLOAT4 m_LightPos;
 
